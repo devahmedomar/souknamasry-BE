@@ -28,6 +28,10 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+
+
+
+    // ahmed
     protected $hidden = [
         'password',
         'remember_token',
