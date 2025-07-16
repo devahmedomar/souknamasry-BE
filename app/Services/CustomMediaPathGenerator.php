@@ -3,7 +3,6 @@
 namespace App\Services;
 
 
-use App\Models\Slider;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\DefaultPathGenerator;
 
@@ -21,9 +20,7 @@ class CustomMediaPathGenerator extends DefaultPathGenerator
     public function getPath(Media $media): string
     {
         switch ($media->model_type) {
-            case Slider::class:
-                return Slider::PATH . DIRECTORY_SEPARATOR . $media->collection_name . DIRECTORY_SEPARATOR . $media->id . DIRECTORY_SEPARATOR;
-              break;
+           
 
 
 
