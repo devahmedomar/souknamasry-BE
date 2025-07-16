@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\User\LoginUser;
-use App\Http\Controllers\User\LogoutUser;
-use App\Http\Controllers\User\RegisterUser;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Dashboard\LoginController;
+use App\Http\Controllers\Dashboard\LogoutController;
+use App\Http\Controllers\Dashboard\RegisterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,16 +18,19 @@ use App\Http\Controllers\User\RegisterUser;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+// Authentication Routes
+Route::prefix('auth')->group(function () {
+    Route::post('login', [LoginController::class, 'login'])->name('login');
+    Route::post('logout', [LogoutController::class, 'logout'])->middleware('api')->name('logout');
+
 });
 
-Route::post('/login', [LoginUser::class, 'login']);
-Route::post('/logout', [LogoutUser::class, 'logout']);
-Route::post('/register', [RegisterUser::class, 'register']);
+Route::middleware('api')->group(function () {
+    // User Management Routes
+    Route::apiResource('users', RegisterController::class)->except(['show']);
 
-Route::group(['middleware' => ['jwt.auth', 'laratrust.permission:view-dashboard']], function () {
-    Route::get('/dashboard', function (Request $request) {
-        return response()->json(['message' => 'Welcome to the dashboard!']);
-    });
+
 });

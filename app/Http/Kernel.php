@@ -70,5 +70,7 @@ class Kernel extends HttpKernel
         // JWT middleware
         'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
         'jwt.refresh' => \Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
+        'permission' => \App\Http\Middleware\CheckPermission::class,
+
     ];
 }
