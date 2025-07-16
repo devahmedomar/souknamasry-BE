@@ -12,12 +12,10 @@
         "laravel/tinker": "^2.8",
         "mcamara/laravel-localization": "^2.3",
         "santigarcor/laratrust": "^8.5",
-<<<<<<< HEAD
+        
         "spatie/laravel-medialibrary": "^11.13",
         "tymon/jwt-auth": "^2.2"
-=======
-        "tymon/jwt-auth": "*"
->>>>>>> f2a6aaaac2704aa7952ff2b90da9b81e7bec3e92
+
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
