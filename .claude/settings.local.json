@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(git -C \"C:\\Users\\ahmed\\OneDrive\\Desktop\\souknamasry-project\\souknamasry-BE\" log --oneline -10)",
+      "Bash(git -C \"C:\\Users\\ahmed\\OneDrive\\Desktop\\souknamasry-project\\souknamasry-BE\" branch -a)",
+      "Bash(tree:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
