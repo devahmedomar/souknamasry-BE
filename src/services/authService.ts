@@ -30,7 +30,7 @@ export class AuthService {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      throw new ConflictError('Email already registered');
+      throw new ConflictError('auth.emailAlreadyRegistered');
     }
 
     // Create new user instance
@@ -78,12 +78,12 @@ export class AuthService {
 
     // Check if user exists and password is correct
     if (!user || !(await user.comparePassword(password))) {
-      throw new Error('Invalid email or password');
+      throw new Error('auth.invalidEmailOrPassword');
     }
 
     // Check if user account is active
     if (!user.isActive) {
-      throw new Error('Account is deactivated. Please contact support.');
+      throw new Error('auth.accountDeactivated');
     }
 
     // Generate JWT token payload

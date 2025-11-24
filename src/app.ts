@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import { ResponseUtil } from './utils/response.util.js';
 import { AppError } from './utils/errors/AppError.js';
 import { HttpStatusCode } from './utils/errors/error.types.js';
+import { i18nMiddleware } from './middleware/i18n.js';
 
 const app = express();
 
@@ -23,6 +24,9 @@ if (process.env.NODE_ENV === 'development') {
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// i18n middleware - Detect and set user's preferred language
+app.use(i18nMiddleware);
 
 // Health check route
 app.get('/health', (req, res) => {

@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/authService.js';
 import { ResponseUtil } from '../utils/response.util.js';
+import { TranslatedResponseUtil } from '../utils/translatedResponse.util.js';
 import { ConflictError } from '../utils/errors/ConflictError.js';
 import { ValidationError } from '../utils/errors/ValidationError.js';
 import { HttpStatusCode } from '../utils/errors/error.types.js';
@@ -37,7 +38,9 @@ export class AuthController {
       // Handle specific error types
       if (error instanceof ConflictError) {
         // Email already exists - 409 Conflict
-        return ResponseUtil.fail(
+        // The error message is a translation key (e.g., 'auth.emailAlreadyRegistered')
+        return TranslatedResponseUtil.fail(
+          req,
           res,
           { email: [error.message] },
           HttpStatusCode.CONFLICT
@@ -46,7 +49,8 @@ export class AuthController {
 
       if (error instanceof ValidationError) {
         // Validation error - 400 Bad Request
-        return ResponseUtil.fail(
+        return TranslatedResponseUtil.fail(
+          req,
           res,
           { error: [error.message] },
           HttpStatusCode.BAD_REQUEST
@@ -55,9 +59,10 @@ export class AuthController {
 
       // Database or unexpected errors - 500 Internal Server Error
       const errorMessage =
-        error instanceof Error ? error.message : 'Registration failed';
+        error instanceof Error ? error.message : 'auth.registrationFailed';
 
-      return ResponseUtil.error(
+      return TranslatedResponseUtil.error(
+        req,
         res,
         errorMessage,
         'REGISTRATION_ERROR',
@@ -91,14 +96,16 @@ export class AuthController {
     } catch (error) {
       // Handle authentication errors
       const errorMessage =
-        error instanceof Error ? error.message : 'Authentication failed';
+        error instanceof Error ? error.message : 'auth.loginFailed';
 
       // Invalid credentials - return 401 Unauthorized
+      // Error messages from service are now translation keys
       if (
-        errorMessage.includes('Invalid') ||
-        errorMessage.includes('deactivated')
+        errorMessage.includes('invalidEmailOrPassword') ||
+        errorMessage.includes('accountDeactivated')
       ) {
-        return ResponseUtil.fail(
+        return TranslatedResponseUtil.fail(
+          req,
           res,
           { credentials: [errorMessage] },
           HttpStatusCode.UNAUTHORIZED
@@ -106,7 +113,8 @@ export class AuthController {
       }
 
       // Unexpected errors - 500 Internal Server Error
-      return ResponseUtil.error(
+      return TranslatedResponseUtil.error(
+        req,
         res,
         errorMessage,
         'LOGIN_ERROR',
