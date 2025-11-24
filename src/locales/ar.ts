@@ -26,6 +26,8 @@ export const ar: TranslationKeys = {
     tokenExpired: 'انتهت صلاحية رمز الوصول',
     invalidToken: 'رمز وصول غير صالح',
     userNotFound: 'المستخدم غير موجود',
+    profileFetchFailed: 'فشل في جلب ملف المستخدم',
+    unauthorized: 'غير مصرح. يرجى تسجيل الدخول أولاً.',
     adminAccessRequired: 'يتطلب صلاحيات المسؤول',
   },
 

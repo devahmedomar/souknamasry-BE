@@ -99,4 +99,22 @@ export class AuthService {
     // Map user document to response DTO and return with token
     return UserMapper.toAuthResponseDto(user, token);
   }
+
+  /**
+   * Get user profile by ID
+   * @param userId - User ID from JWT token
+   * @returns User profile data (password excluded)
+   * @throws Error if user not found
+   */
+  static async getUserProfile(userId: string): Promise<UserDocument> {
+    // Find user by ID and exclude password field
+    const user = await User.findById(userId).select('-password');
+
+    // Check if user exists
+    if (!user) {
+      throw new Error('auth.userNotFound');
+    }
+
+    return user;
+  }
 }

@@ -123,4 +123,62 @@ export class AuthController {
       );
     }
   }
+
+  /**
+   * Get current user profile
+   * GET /api/auth/profile
+   * @param req - Express request with user data from JWT middleware
+   * @param res - Express response
+   * @param next - Express next function
+   * @returns User profile data (password excluded)
+   */
+  static async getProfile(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> {
+    try {
+      // Get userId from JWT token (set by verifyToken middleware)
+      const userId = req.user?.userId;
+
+      // Validate userId exists (should always exist if middleware works correctly)
+      if (!userId) {
+        return TranslatedResponseUtil.fail(
+          req,
+          res,
+          { auth: ['auth.unauthorized'] },
+          HttpStatusCode.UNAUTHORIZED
+        );
+      }
+
+      // Fetch user profile from service
+      const user = await AuthService.getUserProfile(userId);
+
+      // Return success response with user profile
+      return ResponseUtil.success(res, user);
+    } catch (error) {
+      // Handle user not found error
+      const errorMessage =
+        error instanceof Error ? error.message : 'auth.profileFetchFailed';
+
+      if (errorMessage.includes('userNotFound')) {
+        return TranslatedResponseUtil.fail(
+          req,
+          res,
+          { user: [errorMessage] },
+          HttpStatusCode.NOT_FOUND
+        );
+      }
+
+      // Unexpected errors - 500 Internal Server Error
+      return TranslatedResponseUtil.error(
+        req,
+        res,
+        errorMessage,
+        'PROFILE_ERROR',
+        undefined,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }

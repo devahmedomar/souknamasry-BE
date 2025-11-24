@@ -90,8 +90,8 @@ export class I18nUtil {
       .split(',')
       .map((lang) => {
         const parts = lang.trim().split(';');
-        const code = parts[0].split('-')[0]; // Get language code (e.g., "en" from "en-US")
-        const quality = parts[1] ? parseFloat(parts[1].split('=')[1]) : 1.0;
+        const code = parts[0]?.split('-')[0] || ''; // Get language code (e.g., "en" from "en-US")
+        const quality = parts[1] ? parseFloat(parts[1].split('=')[1] || '1.0') : 1.0;
         return { code, quality };
       })
       .sort((a, b) => b.quality - a.quality); // Sort by quality descending

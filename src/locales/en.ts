@@ -26,6 +26,8 @@ export const en: TranslationKeys = {
     tokenExpired: 'Token expired',
     invalidToken: 'Invalid token',
     userNotFound: 'User not found',
+    profileFetchFailed: 'Failed to fetch user profile',
+    unauthorized: 'Unauthorized. Please login first.',
     adminAccessRequired: 'Admin access required',
   },
 

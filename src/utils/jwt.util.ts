@@ -33,10 +33,10 @@ export class JwtUtil {
     }
 
     return jwt.sign(payload, this.SECRET, {
-      expiresIn: this.EXPIRES_IN,
+      expiresIn: this.EXPIRES_IN as string,
       issuer: 'souknamasry-api',
       audience: 'souknamasry-client',
-    });
+    } as jwt.SignOptions);
   }
 
   /**

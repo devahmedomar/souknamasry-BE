@@ -37,6 +37,8 @@ export interface TranslationKeys {
     tokenExpired: string;
     invalidToken: string;
     userNotFound: string;
+    profileFetchFailed: string;
+    unauthorized: string;
     adminAccessRequired: string;
   };
 
