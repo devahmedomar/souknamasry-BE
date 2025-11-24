@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from 'express';
 import { JwtUtil, type IJwtPayload } from '../utils/jwt.util.js';
 import { ResponseUtil } from '../utils/response.util.js';
 import { HttpStatusCode } from '../utils/errors/error.types.js';
-import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 /**
  * Extend Express Request to include user property
@@ -84,19 +83,19 @@ export const verifyToken = (
     next();
   } catch (error) {
     // Handle token expiration
-    if (error instanceof TokenExpiredError) {
+    if (error instanceof Error && error.name === 'TokenExpiredError') {
       return ResponseUtil.fail(
         res,
         {
           token: ['Token has expired. Please login again.'],
-          expiredAt: [error.expiredAt.toISOString()]
+          expiredAt: [(error as any).expiredAt?.toISOString() || 'unknown']
         },
         HttpStatusCode.FORBIDDEN
       );
     }
 
     // Handle invalid token (malformed, invalid signature, etc.)
-    if (error instanceof JsonWebTokenError) {
+    if (error instanceof Error && error.name === 'JsonWebTokenError') {
       return ResponseUtil.fail(
         res,
         { token: ['Invalid token. Authentication failed.'] },
