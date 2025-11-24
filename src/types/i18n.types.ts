@@ -63,6 +63,7 @@ export interface TranslationKeys {
     productDeleted: string;
     outOfStock: string;
     invalidQuantity: string;
+    fetchFailed: string;
   };
 
   // Cart messages

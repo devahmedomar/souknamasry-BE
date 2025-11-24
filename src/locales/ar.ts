@@ -51,6 +51,7 @@ export const ar: TranslationKeys = {
     productDeleted: 'تم حذف المنتج بنجاح',
     outOfStock: 'المنتج غير متوفر في المخزون',
     invalidQuantity: 'كمية غير صحيحة',
+    fetchFailed: 'فشل في جلب المنتجات',
   },
 
   cart: {

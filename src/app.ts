@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import authRoutes from './routes/authRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 import { ResponseUtil } from './utils/response.util.js';
 import { AppError } from './utils/errors/AppError.js';
 import { HttpStatusCode } from './utils/errors/error.types.js';
@@ -38,6 +39,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
 
 // Global error handler middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

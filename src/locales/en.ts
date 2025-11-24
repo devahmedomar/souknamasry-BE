@@ -51,6 +51,7 @@ export const en: TranslationKeys = {
     productDeleted: 'Product deleted successfully',
     outOfStock: 'Product is out of stock',
     invalidQuantity: 'Invalid quantity',
+    fetchFailed: 'Failed to fetch products',
   },
 
   cart: {
