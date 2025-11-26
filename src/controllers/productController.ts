@@ -168,4 +168,86 @@ export class ProductController {
       );
     }
   }
+
+  /**
+   * Get products by category path
+   * GET /api/products/category/*
+   * @param req - Express request with category path
+   * @param res - Express response
+   * @param next - Express next function
+   */
+  static async getProductsByCategoryPath(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> {
+    try {
+      // Get the path after /api/products/category/
+      const fullPath = req.params[0];
+
+      if (!fullPath || fullPath.trim() === '') {
+        return ResponseUtil.fail(
+          res,
+          { path: ['Category path is required'] },
+          HttpStatusCode.BAD_REQUEST
+        );
+      }
+
+      // Split the path into slugs
+      const slugPath = fullPath.split('/').filter((slug: string) => slug.trim() !== '');
+
+      if (slugPath.length === 0) {
+        return ResponseUtil.fail(
+          res,
+          { path: ['Invalid category path'] },
+          HttpStatusCode.BAD_REQUEST
+        );
+      }
+
+      // Extract query parameters
+      const queryParams: ProductQueryParams = {};
+      if (req.query.minPrice) queryParams.minPrice = Number(req.query.minPrice);
+      if (req.query.maxPrice) queryParams.maxPrice = Number(req.query.maxPrice);
+      if (req.query.search) queryParams.search = req.query.search as string;
+      if (req.query.page) queryParams.page = Number(req.query.page);
+      if (req.query.limit) queryParams.limit = Number(req.query.limit);
+      if (req.query.sort) queryParams.sort = req.query.sort as any;
+      if (req.query.inStock !== undefined) {
+        queryParams.inStock = req.query.inStock === 'true';
+      }
+
+      // Check if should include subcategories (default: true for leaf categories)
+      const includeSubcategories = req.query.includeSubcategories !== 'false';
+
+      // Get products from service
+      const result = await ProductService.getProductsByCategoryPath(
+        slugPath,
+        queryParams,
+        includeSubcategories
+      );
+
+      // Return success response
+      return ResponseUtil.success(res, result);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'product.fetchFailed';
+
+      if (errorMessage.includes('categoryNotFound')) {
+        return ResponseUtil.fail(
+          res,
+          { category: ['Category not found'] },
+          HttpStatusCode.NOT_FOUND
+        );
+      }
+
+      return TranslatedResponseUtil.error(
+        req,
+        res,
+        errorMessage,
+        'PRODUCT_FETCH_ERROR',
+        undefined,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }

@@ -1,8 +1,9 @@
-import { Document, Model } from 'mongoose';
+import { Document, Model, Types } from 'mongoose';
 
 /**
  * Interface representing a Category document in MongoDB
  * Contains all category-related data fields
+ * Supports recursive subcategories via parent field
  */
 export interface ICategory {
   name: string;
@@ -10,6 +11,7 @@ export interface ICategory {
   slug: string;
   image?: string;
   isActive: boolean;
+  parent?: Types.ObjectId | ICategory | null;
   createdAt: Date;
   updatedAt: Date;
 }

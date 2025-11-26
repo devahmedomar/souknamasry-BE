@@ -34,6 +34,23 @@ const router = Router();
 router.get('/', ProductController.getAllProducts);
 
 /**
+ * @route   GET /api/products/category/*
+ * @desc    Get products by category path (nested slugs)
+ * @access  Public
+ * @param   path - Nested category path
+ * @query   minPrice, maxPrice, search, page, limit, sort, inStock
+ * @query   includeSubcategories (Boolean) - Include products from subcategories (default: true)
+ * @returns { status: 'success', data: { products: [...], pagination: {...} } }
+ *
+ * @example URLs:
+ * GET /api/products/category/electronics
+ * GET /api/products/category/electronics/computers
+ * GET /api/products/category/electronics/computers/laptops
+ * GET /api/products/category/electronics/computers/laptops?page=1&limit=20&sort=price-low
+ */
+router.get('/category/*', ProductController.getProductsByCategoryPath);
+
+/**
  * @route   GET /api/products/slug/:slug
  * @desc    Get product by slug
  * @access  Public
