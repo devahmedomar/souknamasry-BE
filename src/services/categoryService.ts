@@ -1,4 +1,5 @@
 import { Category } from '../models/Category.js';
+import { Product } from '../models/Product.js';
 import type { ICategory } from '../types/category.types.js';
 import type { Types } from 'mongoose';
 
@@ -286,11 +287,28 @@ export class CategoryService {
     categoryId: string,
     updateData: Partial<ICategory>
   ): Promise<any> {
-    // Validate parent exists if being updated
-    if (updateData.parent) {
-      const parentExists = await Category.findById(updateData.parent);
-      if (!parentExists) {
-        throw new Error('category.parentNotFound');
+    // Validate parent exists and check for circular references if being updated
+    if (updateData.parent !== undefined) {
+      // Check if category is trying to be its own parent
+      if (updateData.parent && updateData.parent.toString() === categoryId) {
+        throw new Error('Circular reference detected: A category cannot be a parent of itself');
+      }
+
+      // Validate parent exists if provided (not null)
+      if (updateData.parent) {
+        const parentExists = await Category.findById(updateData.parent);
+        if (!parentExists) {
+          throw new Error('category.parentNotFound');
+        }
+
+        // Check if new parent is a descendant of current category
+        const isDescendant = await this.isDescendantOf(
+          updateData.parent.toString(),
+          categoryId
+        );
+        if (isDescendant) {
+          throw new Error('Circular reference detected: Cannot move a category under its own descendant');
+        }
       }
     }
 
@@ -308,8 +326,35 @@ export class CategoryService {
   }
 
   /**
+   * Check if a category is a descendant of another category
+   * @param potentialDescendantId - ID of potential descendant
+   * @param ancestorId - ID of potential ancestor
+   * @returns True if potentialDescendant is a descendant of ancestor
+   */
+  private static async isDescendantOf(
+    potentialDescendantId: string,
+    ancestorId: string
+  ): Promise<boolean> {
+    let currentId: string | null = potentialDescendantId;
+
+    // Traverse up the tree from potentialDescendant
+    while (currentId) {
+      if (currentId === ancestorId) {
+        return true;
+      }
+
+      const category: any = await Category.findById(currentId).select('parent').lean();
+      if (!category) break;
+
+      currentId = category.parent ? category.parent.toString() : null;
+    }
+
+    return false;
+  }
+
+  /**
    * Delete category by ID
-   * Only allows deletion if category has no children
+   * Only allows deletion if category has no children and no associated products
    * @param categoryId - Category ID
    */
   static async deleteCategory(categoryId: string): Promise<void> {
@@ -318,6 +363,13 @@ export class CategoryService {
 
     if (childrenCount > 0) {
       throw new Error('category.hasChildren');
+    }
+
+    // Check if category has associated products
+    const productsCount = await Product.countDocuments({ category: categoryId });
+
+    if (productsCount > 0) {
+      throw new Error('category.hasProducts');
     }
 
     const category = await Category.findByIdAndDelete(categoryId);
@@ -329,6 +381,7 @@ export class CategoryService {
 
   /**
    * Soft delete category (mark as inactive)
+   * Recursively deactivates all descendant categories
    * @param categoryId - Category ID
    */
   static async deactivateCategory(categoryId: string): Promise<any> {
@@ -340,6 +393,15 @@ export class CategoryService {
 
     if (!category) {
       throw new Error('category.categoryNotFound');
+    }
+
+    // Recursively deactivate all descendants to prevent orphaned active subcategories
+    const descendantIds = await this.getAllSubcategoryIds(categoryId);
+    if (descendantIds.length > 0) {
+      await Category.updateMany(
+        { _id: { $in: descendantIds } },
+        { isActive: false }
+      );
     }
 
     return category;

@@ -169,29 +169,27 @@ export class CategoryController {
   /**
    * Get category by path (nested slugs)
    * Supports nested URLs like: /categories/electronics/computers/laptops
-   * @route GET /api/categories/path/*
-   * @param path - Nested category path (captured from URL)
+   * @route GET /api/categories/path/:level1/:level2?/:level3?/:level4?/:level5?
+   * @param level1-5 - Category path segments
    */
   static async getCategoryByPath(req: Request, res: Response): Promise<Response> {
     try {
-      // Get the path after /api/categories/path/
-      const fullPath = req.params[0]; // Express wildcard captures this
+      // Build the category path from level parameters
+      const slugPath: string[] = [];
 
-      if (!fullPath || fullPath.trim() === '') {
-        return ResponseUtil.fail(
-          res,
-          { path: ['Category path is required'] },
-          HttpStatusCode.BAD_REQUEST
-        );
+      // Collect all level parameters that exist
+      for (let i = 1; i <= 5; i++) {
+        const levelParam = req.params[`level${i}`];
+        if (levelParam && levelParam.trim() !== '') {
+          slugPath.push(levelParam.trim());
+        }
       }
 
-      // Split the path into slugs
-      const slugPath = fullPath.split('/').filter((slug: string) => slug.trim() !== '');
-
+      // Validate that at least one level is provided
       if (slugPath.length === 0) {
         return ResponseUtil.fail(
           res,
-          { path: ['Invalid category path'] },
+          { path: ['Category path is required'] },
           HttpStatusCode.BAD_REQUEST
         );
       }
@@ -400,6 +398,14 @@ export class CategoryController {
         return ResponseUtil.fail(
           res,
           { category: ['Cannot delete category with subcategories'] },
+          HttpStatusCode.BAD_REQUEST
+        );
+      }
+
+      if (error instanceof Error && error.message === 'category.hasProducts') {
+        return ResponseUtil.fail(
+          res,
+          { category: ['Cannot delete category with associated products'] },
           HttpStatusCode.BAD_REQUEST
         );
       }

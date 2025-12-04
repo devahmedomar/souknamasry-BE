@@ -171,8 +171,8 @@ export class ProductController {
 
   /**
    * Get products by category path
-   * GET /api/products/category/*
-   * @param req - Express request with category path
+   * GET /api/products/category/:level1/:level2?/:level3?/:level4?/:level5?
+   * @param req - Express request with category path levels
    * @param res - Express response
    * @param next - Express next function
    */
@@ -182,24 +182,22 @@ export class ProductController {
     next: NextFunction
   ): Promise<void | Response> {
     try {
-      // Get the path after /api/products/category/
-      const fullPath = req.params[0];
+      // Build the category path from level parameters
+      const slugPath: string[] = [];
 
-      if (!fullPath || fullPath.trim() === '') {
-        return ResponseUtil.fail(
-          res,
-          { path: ['Category path is required'] },
-          HttpStatusCode.BAD_REQUEST
-        );
+      // Collect all level parameters that exist
+      for (let i = 1; i <= 5; i++) {
+        const levelParam = req.params[`level${i}`];
+        if (levelParam && levelParam.trim() !== '') {
+          slugPath.push(levelParam.trim());
+        }
       }
 
-      // Split the path into slugs
-      const slugPath = fullPath.split('/').filter((slug: string) => slug.trim() !== '');
-
+      // Validate that at least one level is provided
       if (slugPath.length === 0) {
         return ResponseUtil.fail(
           res,
-          { path: ['Invalid category path'] },
+          { path: ['Category path is required'] },
           HttpStatusCode.BAD_REQUEST
         );
       }

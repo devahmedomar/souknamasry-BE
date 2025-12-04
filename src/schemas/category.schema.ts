@@ -79,12 +79,37 @@ categorySchema.virtual('children', {
  * Pre-save hook to auto-generate slug from name
  * Generates slug only if name is new or modified
  * Converts to lowercase and replaces spaces with hyphens
+ * Handles duplicate slugs by adding numeric suffix
  * Also validates parent to prevent circular references
  */
 categorySchema.pre('save', async function (next) {
   // Only generate slug if name is new or modified
   if (this.isModified('name')) {
-    this.slug = generateSlug(this.name);
+    const baseSlug = generateSlug(this.name);
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Keep trying until we find a unique slug
+    while (true) {
+      const existingCategory = await this.model('Category').findOne({
+        slug,
+        _id: { $ne: this._id }, // Exclude current document
+      });
+
+      if (!existingCategory) {
+        this.slug = slug;
+        break;
+      }
+
+      // Add numeric suffix and try again
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+
+      // Safety limit to prevent infinite loops
+      if (counter > 100) {
+        throw new Error('Unable to generate unique slug after 100 attempts');
+      }
+    }
   }
 
   // Validate parent to prevent circular references

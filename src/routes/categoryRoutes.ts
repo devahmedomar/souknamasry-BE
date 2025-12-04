@@ -79,10 +79,10 @@ router.get('/root', CategoryController.getRootCategories);
 router.get('/tree', CategoryController.getCategoryTree);
 
 /**
- * @route   GET /api/categories/path/*
- * @desc    Get category by nested path (supports unlimited nesting)
+ * @route   GET /api/categories/path/:level1/...
+ * @desc    Get category by nested path (supports up to 5 levels)
  * @access  Public
- * @param   path - Nested category path (e.g., electronics/computers/laptops)
+ * @param   level1-5 - Category path segments
  * @returns {
  *   status: 'success',
  *   data: {
@@ -129,7 +129,12 @@ router.get('/tree', CategoryController.getCategoryTree);
  *   }
  * }
  */
-router.get('/path/*', CategoryController.getCategoryByPath);
+// Support up to 5 levels of category nesting
+router.get('/path/:level1/:level2/:level3/:level4/:level5', CategoryController.getCategoryByPath);
+router.get('/path/:level1/:level2/:level3/:level4', CategoryController.getCategoryByPath);
+router.get('/path/:level1/:level2/:level3', CategoryController.getCategoryByPath);
+router.get('/path/:level1/:level2', CategoryController.getCategoryByPath);
+router.get('/path/:level1', CategoryController.getCategoryByPath);
 
 /**
  * @route   GET /api/categories/slug/:slug

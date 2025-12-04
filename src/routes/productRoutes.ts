@@ -34,10 +34,10 @@ const router = Router();
 router.get('/', ProductController.getAllProducts);
 
 /**
- * @route   GET /api/products/category/*
+ * @route   GET /api/products/category/:level1/...
  * @desc    Get products by category path (nested slugs)
  * @access  Public
- * @param   path - Nested category path
+ * @param   level1-5 - Category path segments (supports up to 5 levels)
  * @query   minPrice, maxPrice, search, page, limit, sort, inStock
  * @query   includeSubcategories (Boolean) - Include products from subcategories (default: true)
  * @returns { status: 'success', data: { products: [...], pagination: {...} } }
@@ -48,7 +48,12 @@ router.get('/', ProductController.getAllProducts);
  * GET /api/products/category/electronics/computers/laptops
  * GET /api/products/category/electronics/computers/laptops?page=1&limit=20&sort=price-low
  */
-router.get('/category/*', ProductController.getProductsByCategoryPath);
+// Support up to 5 levels of category nesting
+router.get('/category/:level1/:level2/:level3/:level4/:level5', ProductController.getProductsByCategoryPath);
+router.get('/category/:level1/:level2/:level3/:level4', ProductController.getProductsByCategoryPath);
+router.get('/category/:level1/:level2/:level3', ProductController.getProductsByCategoryPath);
+router.get('/category/:level1/:level2', ProductController.getProductsByCategoryPath);
+router.get('/category/:level1', ProductController.getProductsByCategoryPath);
 
 /**
  * @route   GET /api/products/slug/:slug
