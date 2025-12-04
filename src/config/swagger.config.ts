@@ -1,4 +1,10 @@
 import swaggerJsdoc from 'swagger-jsdoc';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -383,9 +389,12 @@ const swaggerDefinition = {
 const options: swaggerJsdoc.Options = {
   definition: swaggerDefinition,
   apis: [
-    './src/routes/*.ts',
-    './src/routes/*.js',
-    './dist/routes/*.js'
+    // In development: use TypeScript files from src/
+    ...(process.env.NODE_ENV === 'development'
+      ? [path.resolve(__dirname, '../routes/*.ts')]
+      : []),
+    // In production/Vercel: use compiled JavaScript files from dist/
+    path.resolve(__dirname, '../routes/*.js'),
   ]
 };
 
