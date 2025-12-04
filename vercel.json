@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "dist/server.js",
       "use": "@vercel/node"
     }
   ],
@@ -12,8 +12,6 @@
       "dest": "dist/server.js"
     }
   ],
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
   "buildCommand": "npm run build",
-  "devCommand": "npm run dev"
+  "installCommand": "npm install"
 }
