@@ -14,11 +14,27 @@ import { i18nMiddleware } from './middleware/i18n.js';
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
+// Security middleware with Swagger-friendly configuration
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+}));
 
-// CORS
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://souknamasry-be.vercel.app']
+    : true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Logging
 if (process.env.NODE_ENV === 'development') {
