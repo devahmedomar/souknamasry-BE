@@ -2,6 +2,8 @@ import express, { type Request, type Response, type NextFunction } from 'express
 import cors from 'cors';
 import helmet, { type HelmetOptions } from 'helmet';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.config.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -29,6 +31,25 @@ app.use(express.urlencoded({ extended: true }));
 
 // i18n middleware - Detect and set user's preferred language
 app.use(i18nMiddleware);
+
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Souknamasry API Documentation',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    filter: true,
+    tagsSorter: 'alpha',
+    operationsSorter: 'alpha'
+  }
+}));
+
+// Swagger JSON spec endpoint
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 // Health check route
 app.get('/health', (req, res) => {

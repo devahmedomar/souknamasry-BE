@@ -9,44 +9,195 @@ import { ProductController } from '../controllers/productController.js';
 const router = Router();
 
 /**
- * @route   GET /api/products
- * @desc    Get all products with filtering, search, and pagination
- * @access  Public
- * @query   category (ObjectId)
- * @query   minPrice (Number)
- * @query   maxPrice (Number)
- * @query   search (String) - Search in name/description
- * @query   page (Number) - Default: 1
- * @query   limit (Number) - Default: 20, Max: 100
- * @query   sort (String) - newest, price-low, price-high, featured
- * @query   inStock (Boolean)
- * @returns {
- *   status: 'success',
- *   data: {
- *     products: [...],
- *     pagination: { total, page, pages, limit }
- *   }
- * }
- *
- * @example
- * GET /api/products?category=123&minPrice=10&maxPrice=100&page=1&limit=20&sort=price-low
+ * @swagger
+ * /api/products:
+ *   get:
+ *     tags:
+ *       - Products - Public
+ *     summary: Get all products with filtering and pagination
+ *     description: Retrieve a paginated list of products with optional filters for category, price range, search terms, stock status, and sorting options
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filter by category ID (MongoDB ObjectId)
+ *         example: 507f1f77bcf86cd799439011
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Minimum price filter
+ *         example: 10
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Maximum price filter
+ *         example: 100
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search query for product name and description
+ *         example: wireless mouse
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 20
+ *         description: Number of items per page (max 100)
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [newest, price-low, price-high, featured]
+ *           default: newest
+ *         description: Sort order for products
+ *       - in: query
+ *         name: inStock
+ *         schema:
+ *           type: boolean
+ *         description: Filter by stock availability
+ *         example: true
+ *     responses:
+ *       200:
+ *         description: Products retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     products:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ *                     pagination:
+ *                       $ref: '#/components/schemas/Pagination'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
  */
 router.get('/', ProductController.getAllProducts);
 
 /**
- * @route   GET /api/products/category/:level1/...
- * @desc    Get products by category path (nested slugs)
- * @access  Public
- * @param   level1-5 - Category path segments (supports up to 5 levels)
- * @query   minPrice, maxPrice, search, page, limit, sort, inStock
- * @query   includeSubcategories (Boolean) - Include products from subcategories (default: true)
- * @returns { status: 'success', data: { products: [...], pagination: {...} } }
- *
- * @example URLs:
- * GET /api/products/category/electronics
- * GET /api/products/category/electronics/computers
- * GET /api/products/category/electronics/computers/laptops
- * GET /api/products/category/electronics/computers/laptops?page=1&limit=20&sort=price-low
+ * @swagger
+ * /api/products/category/{level1}/{level2}/{level3}/{level4}/{level5}:
+ *   get:
+ *     tags:
+ *       - Products - Public
+ *     summary: Get products by nested category path
+ *     description: Retrieve products filtered by hierarchical category path using slugs. Supports up to 5 levels of nesting. Can include products from subcategories.
+ *     parameters:
+ *       - in: path
+ *         name: level1
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: First level category slug
+ *         example: electronics
+ *       - in: path
+ *         name: level2
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Second level category slug
+ *         example: computers
+ *       - in: path
+ *         name: level3
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Third level category slug
+ *         example: laptops
+ *       - in: path
+ *         name: level4
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Fourth level category slug
+ *       - in: path
+ *         name: level5
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Fifth level category slug
+ *       - in: query
+ *         name: includeSubcategories
+ *         schema:
+ *           type: boolean
+ *           default: true
+ *         description: Include products from child categories
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [newest, price-low, price-high, featured]
+ *       - in: query
+ *         name: inStock
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Products retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     products:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ *                     pagination:
+ *                       $ref: '#/components/schemas/Pagination'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  */
 // Support up to 5 levels of category nesting
 router.get('/category/:level1/:level2/:level3/:level4/:level5', ProductController.getProductsByCategoryPath);
@@ -56,20 +207,70 @@ router.get('/category/:level1/:level2', ProductController.getProductsByCategoryP
 router.get('/category/:level1', ProductController.getProductsByCategoryPath);
 
 /**
- * @route   GET /api/products/slug/:slug
- * @desc    Get product by slug
- * @access  Public
- * @param   slug - Product slug
- * @returns { status: 'success', data: product }
+ * @swagger
+ * /api/products/slug/{slug}:
+ *   get:
+ *     tags:
+ *       - Products - Public
+ *     summary: Get product by slug
+ *     description: Retrieve a single product using its URL-friendly slug identifier
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product slug (URL-friendly identifier)
+ *         example: wireless-mouse
+ *     responses:
+ *       200:
+ *         description: Product retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  */
 router.get('/slug/:slug', ProductController.getProductBySlug);
 
 /**
- * @route   GET /api/products/:id
- * @desc    Get product by ID
- * @access  Public
- * @param   id - Product ID
- * @returns { status: 'success', data: product }
+ * @swagger
+ * /api/products/{id}:
+ *   get:
+ *     tags:
+ *       - Products - Public
+ *     summary: Get product by ID
+ *     description: Retrieve a single product using its MongoDB ObjectId
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product MongoDB ObjectId
+ *         example: 507f1f77bcf86cd799439011
+ *     responses:
+ *       200:
+ *         description: Product retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  */
 router.get('/:id', ProductController.getProductById);
 
