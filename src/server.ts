@@ -29,3 +29,6 @@ process.on('uncaughtException', (err: Error) => {
   console.log(err.name, err.message);
   process.exit(1);
 });
+
+// Export for Vercel
+export default app;

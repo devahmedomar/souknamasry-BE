@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
+import helmet, { type HelmetOptions } from 'helmet';
 import morgan from 'morgan';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
