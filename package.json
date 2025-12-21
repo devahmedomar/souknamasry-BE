@@ -16,7 +16,9 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "seed": "tsx src/seeders/seed.ts",
+    "seed:destroy": "tsx src/seeders/seed.ts --destroy"
   },
   "keywords": [],
   "author": "",
