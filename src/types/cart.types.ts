@@ -6,6 +6,7 @@ export interface ICartItem {
     quantity: number;
     price: number;
     totalPrice: number;
+    _id?: Types.ObjectId;
 }
 
 export interface ICart {
@@ -16,7 +17,7 @@ export interface ICart {
     shipping: number;
     discount: number;
     total: number;
-    coupon?: string;
+    coupon?: string | undefined;
     itemCount: number;
 }
 

@@ -9,7 +9,7 @@ export class CartService {
      * Creates a new cart if one doesn't exist
      */
     static async getCart(userId: string): Promise<ICartDocument> {
-        let cart = await Cart.findOne({ user: userId }).populate('items.product');
+        let cart: ICartDocument | null = await Cart.findOne({ user: userId }).populate('items.product');
 
         if (!cart) {
             cart = (await Cart.create({
@@ -47,13 +47,13 @@ export class CartService {
 
         if (existingItemIndex > -1) {
             // Item exists, update quantity
-            const newQuantity = cart.items[existingItemIndex].quantity + quantity;
+            const newQuantity = cart.items[existingItemIndex]!.quantity + quantity;
 
             if (product.stockQuantity < newQuantity) {
                 throw new Error('product.insufficientStock');
             }
 
-            cart.items[existingItemIndex].quantity = newQuantity;
+            cart.items[existingItemIndex]!.quantity = newQuantity;
         } else {
             // New item
             cart.items.push({
@@ -88,7 +88,7 @@ export class CartService {
             throw new Error('cart.itemNotFound');
         }
 
-        const productId = (cart.items[itemIndex].product as any)._id || cart.items[itemIndex].product;
+        const productId = (cart.items[itemIndex]!.product as any)._id || cart.items[itemIndex]!.product;
         const product = await Product.findById(productId);
 
         if (!product) {
@@ -99,7 +99,7 @@ export class CartService {
             throw new Error('product.insufficientStock');
         }
 
-        cart.items[itemIndex].quantity = quantity;
+        cart.items[itemIndex]!.quantity = quantity;
 
         await cart.save();
         return await cart.populate('items.product');
