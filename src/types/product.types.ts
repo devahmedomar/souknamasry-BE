@@ -16,6 +16,7 @@ export interface ISupplierInfo {
  */
 export interface IProduct {
   name: string;
+  nameAr?: string;
   description: string;
   slug: string;
   price: number;

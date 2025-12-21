@@ -19,6 +19,11 @@ export const productSchema = new Schema<IProduct, ProductModel, IProductVirtuals
       trim: true,
       maxlength: [200, 'Product name cannot exceed 200 characters'],
     },
+    nameAr: {
+      type: String,
+      trim: true,
+      maxlength: [200, 'Product Arabic name cannot exceed 200 characters'],
+    },
     description: {
       type: String,
       required: [true, 'Product description is required'],
