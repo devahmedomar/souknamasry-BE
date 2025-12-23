@@ -10,6 +10,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import { cartRoutes } from './routes/cartRoutes.js';
 import { addressRoutes } from './routes/addressRoutes.js';
 import { orderRoutes } from './routes/orderRoutes.js';
+import { favouriteRoutes } from './routes/favouriteRoutes.js';
 
 import { ResponseUtil } from './utils/response.util.js';
 import { AppError } from './utils/errors/AppError.js';
@@ -31,14 +32,7 @@ app.use(helmet({
 }));
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://souknamasry-be.vercel.app']
-    : true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 
 // Logging
 if (process.env.NODE_ENV === 'development') {
@@ -86,6 +80,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/favourites', favouriteRoutes);
 
 
 // Global error handler middleware
