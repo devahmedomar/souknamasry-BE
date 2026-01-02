@@ -181,4 +181,33 @@ export class AuthController {
       );
     }
   }
+
+  /**
+   * Logout user
+   * POST /api/auth/logout
+   * @param req - Express request with user data from JWT middleware
+   * @param res - Express response
+   * @param next - Express next function
+   * @returns Success message (client should discard token)
+   */
+  static async logout(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> {
+    try {
+      // Token is validated by verifyToken middleware
+      // Client should discard the token after this response
+      return ResponseUtil.success(res, { message: 'Logged out successfully' });
+    } catch (error) {
+      return TranslatedResponseUtil.error(
+        req,
+        res,
+        'auth.logoutFailed',
+        'LOGOUT_ERROR',
+        undefined,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }
