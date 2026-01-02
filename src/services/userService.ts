@@ -1,5 +1,5 @@
 import { User } from '../models/User.js';
-import type { IUserDocument } from '../types/user.types.js';
+import type { UserDocument } from '../types/user.types.js';
 
 export interface UpdateUserProfileInput {
     firstName?: string;
@@ -14,7 +14,7 @@ export class UserService {
     /**
      * Get user profile by ID
      */
-    static async getUserProfile(userId: string): Promise<IUserDocument | null> {
+    static async getUserProfile(userId: string): Promise<UserDocument | null> {
         return await User.findById(userId).select('-password');
     }
 
@@ -24,7 +24,7 @@ export class UserService {
     static async updateUserProfile(
         userId: string,
         data: UpdateUserProfileInput
-    ): Promise<IUserDocument | null> {
+    ): Promise<UserDocument | null> {
         const user = await User.findById(userId);
 
         if (!user) {
