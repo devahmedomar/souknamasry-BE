@@ -60,6 +60,14 @@ export const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       type: Boolean,
       default: true,
     },
+    imageUrl: {
+      type: String,
+      trim: true,
+    },
+    city: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true, // Automatically manage createdAt and updatedAt
@@ -82,7 +90,7 @@ userSchema.pre('save', async function (next) {
     const salt = await bcrypt.genSalt(10);
 
     // Hash password with generated salt
-    this.password = await bcrypt.hash(this.password, salt);
+    (this as any).password = await bcrypt.hash((this as any).password, salt);
 
     next();
   } catch (error) {
@@ -99,7 +107,7 @@ userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   try {
-    return await bcrypt.compare(candidatePassword, this.password);
+    return await bcrypt.compare(candidatePassword, (this as any).password);
   } catch (error) {
     return false;
   }

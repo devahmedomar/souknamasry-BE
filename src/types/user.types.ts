@@ -21,6 +21,8 @@ export interface IUser {
   phone?: string;
   role: UserRole;
   isActive: boolean;
+  imageUrl?: string;
+  city?: string;
   createdAt: Date;
   updatedAt: Date;
 }

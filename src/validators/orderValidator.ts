@@ -2,11 +2,11 @@ import { body } from 'express-validator';
 import { PaymentMethod } from '../types/order.types.js';
 
 export const validatePlaceOrder = [
-    body('addressId')
+    body('shippingAddressId')
         .notEmpty()
-        .withMessage('Address ID is required')
+        .withMessage('Shipping address ID is required')
         .isMongoId()
-        .withMessage('Invalid address ID format'),
+        .withMessage('Invalid shipping address ID format'),
     body('paymentMethod')
         .notEmpty()
         .withMessage('Payment method is required')

@@ -41,10 +41,10 @@ export class OrderController {
     ): Promise<void | Response> {
         try {
             const userId = req.user!.userId;
-            const { addressId, paymentMethod, notes } = req.body;
+            const { shippingAddressId, paymentMethod, notes } = req.body;
 
             const order = await OrderService.placeOrder(userId, {
-                addressId,
+                shippingAddressId,
                 paymentMethod,
                 notes,
             });
@@ -101,7 +101,16 @@ export class OrderController {
         try {
             const userId = req.user!.userId;
             const orders = await OrderService.getOrders(userId);
-            return ResponseUtil.success(res, orders);
+
+            // Map to simplified structure as requested by user
+            const simplifiedOrders = orders.map(order => ({
+                id: order._id,
+                date: order.createdAt,
+                price: order.total,
+                status: order.status
+            }));
+
+            return ResponseUtil.success(res, simplifiedOrders);
         } catch (error) {
             return TranslatedResponseUtil.error(
                 req,

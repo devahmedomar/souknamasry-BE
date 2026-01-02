@@ -34,12 +34,12 @@ const orderItemSchema = new Schema(
 
 const shippingAddressSchema = new Schema(
     {
-        firstName: { type: String, required: true },
-        lastName: { type: String, required: true },
+        name: { type: String, required: true },
         phone: { type: String, required: true },
         city: { type: String, required: true },
-        addressLine: { type: String, required: true },
-        nearestLandmark: { type: String },
+        area: { type: String, required: true },
+        street: { type: String, required: true },
+        landmark: { type: String },
         apartmentNumber: { type: String },
     },
     { _id: false }

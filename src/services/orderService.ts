@@ -7,7 +7,7 @@ import type { IOrderDocument, IOrderItem, IShippingAddress } from '../types/orde
 import { PaymentMethod, PaymentStatus, OrderStatus } from '../types/order.types.js';
 
 export interface PlaceOrderInput {
-    addressId: string;
+    shippingAddressId: string;
     paymentMethod: PaymentMethod;
     notes?: string;
 }
@@ -76,7 +76,7 @@ export class OrderService {
         }
 
         // 2. Get and validate address
-        const address = await Address.findOne({ _id: input.addressId, user: userId });
+        const address = await Address.findOne({ _id: input.shippingAddressId, user: userId });
 
         if (!address) {
             throw new Error('order.addressNotFound');
@@ -120,13 +120,14 @@ export class OrderService {
         );
 
         // 5. Build shipping address snapshot
+        // 5. Build shipping address snapshot
         const shippingAddress: IShippingAddress = {
-            firstName: address.firstName,
-            lastName: address.lastName,
+            name: address.name,
             phone: address.phone,
             city: address.city,
-            addressLine: address.addressLine,
-            nearestLandmark: address.nearestLandmark,
+            area: address.area,
+            street: address.street,
+            landmark: address.landmark,
             apartmentNumber: address.apartmentNumber,
         };
 

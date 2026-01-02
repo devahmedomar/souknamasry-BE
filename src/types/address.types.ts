@@ -2,12 +2,12 @@ import { Document, Model, Types } from 'mongoose';
 
 export interface IAddress {
     user: Types.ObjectId;
-    firstName: string;
-    lastName: string;
+    name: string;
     phone: string;
     city: string;
-    addressLine: string;
-    nearestLandmark?: string | undefined;
+    area: string;
+    street: string;
+    landmark?: string | undefined;
     apartmentNumber?: string | undefined;
     isDefault: boolean;
     createdAt: Date;

@@ -35,12 +35,12 @@ export interface IOrderItem {
 }
 
 export interface IShippingAddress {
-    firstName: string;
-    lastName: string;
+    name: string;
     phone: string;
     city: string;
-    addressLine: string;
-    nearestLandmark?: string | undefined;
+    area: string;
+    street: string;
+    landmark?: string | undefined;
     apartmentNumber?: string | undefined;
 }
 

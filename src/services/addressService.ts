@@ -2,12 +2,12 @@ import { Address } from '../models/Address.js';
 import type { IAddressDocument } from '../types/address.types.js';
 
 export interface CreateAddressInput {
-    firstName: string;
-    lastName: string;
+    name: string;
     phone: string;
     city: string;
-    addressLine: string;
-    nearestLandmark?: string;
+    area: string;
+    street: string;
+    landmark?: string;
     apartmentNumber?: string;
     isDefault?: boolean;
 }
@@ -37,12 +37,12 @@ export class AddressService {
 
         const address = await Address.create({
             user: userId,
-            firstName: data.firstName,
-            lastName: data.lastName,
+            name: data.name,
             phone: data.phone,
             city: data.city,
-            addressLine: data.addressLine,
-            nearestLandmark: data.nearestLandmark,
+            area: data.area,
+            street: data.street,
+            landmark: data.landmark,
             apartmentNumber: data.apartmentNumber,
             isDefault,
         });

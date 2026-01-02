@@ -1,18 +1,12 @@
 import { body } from 'express-validator';
 
 export const validateCreateAddress = [
-    body('firstName')
+    body('name')
         .notEmpty()
-        .withMessage('First name is required')
+        .withMessage('Name is required')
         .trim()
-        .isLength({ max: 50 })
-        .withMessage('First name cannot exceed 50 characters'),
-    body('lastName')
-        .notEmpty()
-        .withMessage('Last name is required')
-        .trim()
-        .isLength({ max: 50 })
-        .withMessage('Last name cannot exceed 50 characters'),
+        .isLength({ max: 100 })
+        .withMessage('Name cannot exceed 100 characters'),
     body('phone')
         .notEmpty()
         .withMessage('Phone number is required')
@@ -23,17 +17,23 @@ export const validateCreateAddress = [
         .trim()
         .isLength({ max: 100 })
         .withMessage('City cannot exceed 100 characters'),
-    body('addressLine')
+    body('area')
         .notEmpty()
-        .withMessage('Address is required')
+        .withMessage('Area is required')
+        .trim()
+        .isLength({ max: 100 })
+        .withMessage('Area cannot exceed 100 characters'),
+    body('street')
+        .notEmpty()
+        .withMessage('Street is required')
         .trim()
         .isLength({ max: 255 })
-        .withMessage('Address cannot exceed 255 characters'),
-    body('nearestLandmark')
+        .withMessage('Street cannot exceed 255 characters'),
+    body('landmark')
         .optional()
         .trim()
         .isLength({ max: 255 })
-        .withMessage('Nearest landmark cannot exceed 255 characters'),
+        .withMessage('Landmark cannot exceed 255 characters'),
     body('apartmentNumber')
         .optional()
         .trim()
@@ -46,16 +46,11 @@ export const validateCreateAddress = [
 ];
 
 export const validateUpdateAddress = [
-    body('firstName')
+    body('name')
         .optional()
         .trim()
-        .isLength({ max: 50 })
-        .withMessage('First name cannot exceed 50 characters'),
-    body('lastName')
-        .optional()
-        .trim()
-        .isLength({ max: 50 })
-        .withMessage('Last name cannot exceed 50 characters'),
+        .isLength({ max: 100 })
+        .withMessage('Name cannot exceed 100 characters'),
     body('phone')
         .optional()
         .trim(),
@@ -64,16 +59,21 @@ export const validateUpdateAddress = [
         .trim()
         .isLength({ max: 100 })
         .withMessage('City cannot exceed 100 characters'),
-    body('addressLine')
+    body('area')
+        .optional()
+        .trim()
+        .isLength({ max: 100 })
+        .withMessage('Area cannot exceed 100 characters'),
+    body('street')
         .optional()
         .trim()
         .isLength({ max: 255 })
-        .withMessage('Address cannot exceed 255 characters'),
-    body('nearestLandmark')
+        .withMessage('Street cannot exceed 255 characters'),
+    body('landmark')
         .optional()
         .trim()
         .isLength({ max: 255 })
-        .withMessage('Nearest landmark cannot exceed 255 characters'),
+        .withMessage('Landmark cannot exceed 255 characters'),
     body('apartmentNumber')
         .optional()
         .trim()

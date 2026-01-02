@@ -9,17 +9,11 @@ export const addressSchema = new Schema<IAddressDocument, AddressModel>(
             required: true,
             index: true,
         },
-        firstName: {
+        name: {
             type: String,
-            required: [true, 'First name is required'],
+            required: [true, 'Name is required'],
             trim: true,
-            maxlength: [50, 'First name cannot exceed 50 characters'],
-        },
-        lastName: {
-            type: String,
-            required: [true, 'Last name is required'],
-            trim: true,
-            maxlength: [50, 'Last name cannot exceed 50 characters'],
+            maxlength: [100, 'Name cannot exceed 100 characters'],
         },
         phone: {
             type: String,
@@ -32,16 +26,22 @@ export const addressSchema = new Schema<IAddressDocument, AddressModel>(
             trim: true,
             maxlength: [100, 'City cannot exceed 100 characters'],
         },
-        addressLine: {
+        area: {
             type: String,
-            required: [true, 'Address is required'],
+            required: [true, 'Area is required'],
             trim: true,
-            maxlength: [255, 'Address cannot exceed 255 characters'],
+            maxlength: [100, 'Area cannot exceed 100 characters'],
         },
-        nearestLandmark: {
+        street: {
+            type: String,
+            required: [true, 'Street is required'],
+            trim: true,
+            maxlength: [255, 'Street cannot exceed 255 characters'],
+        },
+        landmark: {
             type: String,
             trim: true,
-            maxlength: [255, 'Nearest landmark cannot exceed 255 characters'],
+            maxlength: [255, 'Landmark cannot exceed 255 characters'],
             default: null,
         },
         apartmentNumber: {
