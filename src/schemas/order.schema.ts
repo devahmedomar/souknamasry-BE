@@ -57,6 +57,11 @@ export const orderSchema = new Schema<IOrderDocument, OrderModel>(
             type: String,
             required: true,
             unique: true,
+            default: () => {
+                const timestamp = Date.now().toString(36).toUpperCase();
+                const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+                return `ORD-${timestamp}-${random}`;
+            },
         },
         items: {
             type: [orderItemSchema],
@@ -115,12 +120,3 @@ export const orderSchema = new Schema<IOrderDocument, OrderModel>(
     }
 );
 
-// Generate unique order number before saving
-orderSchema.pre('save', function (next) {
-    if (this.isNew && !this.orderNumber) {
-        const timestamp = Date.now().toString(36).toUpperCase();
-        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-        this.orderNumber = `ORD-${timestamp}-${random}`;
-    }
-    next();
-});
