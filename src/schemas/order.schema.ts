@@ -116,7 +116,7 @@ export const orderSchema = new Schema<IOrderDocument, OrderModel>(
 );
 
 // Generate unique order number before saving
-orderSchema.pre('save', async function (next) {
+orderSchema.pre('save', function (next) {
     if (this.isNew && !this.orderNumber) {
         const timestamp = Date.now().toString(36).toUpperCase();
         const random = Math.random().toString(36).substring(2, 6).toUpperCase();
