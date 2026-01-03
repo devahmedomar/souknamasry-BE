@@ -33,7 +33,7 @@ app.use(helmet({
 }));
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:4200','https://souknamasry-be.vercel.app'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:4200','https://souknamasry-be.vercel.app','https://souknamasry.vercel.app/'];
 
 app.use(cors({
   origin: (origin, callback) => {
