@@ -274,11 +274,13 @@ export class ProductService {
           slug: product.slug,
           price: product.price,
           image: product.images?.[0],
-          category: product.category ? {
-            _id: product.category._id.toString(),
-            name: product.category.name,
-            slug: product.category.slug,
-          } : undefined,
+          ...(product.category && {
+            category: {
+              _id: product.category._id.toString(),
+              name: product.category.name,
+              slug: product.category.slug,
+            }
+          }),
         })
       );
 

@@ -101,7 +101,7 @@ export class ProductController {
       const queryParams: AutocompleteQueryParams = {
         query: query.trim(),
         limit: req.query.limit ? Number(req.query.limit) : 10,
-        category: req.query.category as string | undefined,
+        ...(req.query.category && { category: req.query.category as string }),
       };
 
       // Get suggestions from service
