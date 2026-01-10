@@ -148,13 +148,28 @@ export class ProductService {
       filter.inStock = inStock;
     }
 
-    // MongoDB Full-Text Search
+    // Search implementation
+    // For short queries (1-2 chars), use regex for partial matching
+    // For longer queries, use text search for better performance
     let textSearchApplied = false;
     if (search && search.trim()) {
-      const sanitizedSearch = search.trim().replace(/[{}()[\]$]/g, '');
-      if (sanitizedSearch.length > 0) {
-        filter.$text = { $search: sanitizedSearch };
-        textSearchApplied = true;
+      const sanitizedSearch = search.trim();
+
+      if (sanitizedSearch.length <= 2) {
+        // Use regex for short queries (supports single character search)
+        const escapedSearch = sanitizedSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        filter.$or = [
+          { name: { $regex: escapedSearch, $options: 'i' } },
+          { nameAr: { $regex: escapedSearch, $options: 'i' } },
+          { description: { $regex: escapedSearch, $options: 'i' } },
+        ];
+      } else {
+        // Use text search for longer queries (better performance)
+        const sanitizedTextSearch = sanitizedSearch.replace(/[{}()[\]$]/g, '');
+        if (sanitizedTextSearch.length > 0) {
+          filter.$text = { $search: sanitizedTextSearch };
+          textSearchApplied = true;
+        }
       }
     }
 
@@ -224,6 +239,7 @@ export class ProductService {
   /**
    * Get autocomplete suggestions for product search
    * Lightweight query focusing on name matching only
+   * Uses regex for partial matching to support single characters and prefixes
    * @param queryParams - Autocomplete query parameters
    * @returns Autocomplete suggestions
    */
@@ -240,6 +256,9 @@ export class ProductService {
     const sanitizedQuery = query.trim().substring(0, 100); // Max 100 chars
     const validatedLimit = Math.min(10, Math.max(1, limit)); // 1-10 range
 
+    // Escape special regex characters to prevent regex injection
+    const escapedQuery = sanitizedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     // Build filter
     const filter: FilterQuery<IProduct> = {
       isActive: true,
@@ -251,16 +270,19 @@ export class ProductService {
       filter.category = category;
     }
 
-    // Use text search
-    filter.$text = { $search: sanitizedQuery };
+    // Use regex for partial matching (supports single characters and prefixes)
+    // Search in both name and nameAr fields
+    filter.$or = [
+      { name: { $regex: escapedQuery, $options: 'i' } },
+      { nameAr: { $regex: escapedQuery, $options: 'i' } },
+    ];
 
     try {
       // Query with minimal fields for performance
       const suggestions = await Product.find(filter)
         .select('name nameAr slug price images category')
-        .select({ score: { $meta: 'textScore' } })
         .populate('category', 'name slug')
-        .sort({ score: { $meta: 'textScore' } })
+        .sort({ name: 1 }) // Sort alphabetically
         .limit(validatedLimit)
         .maxTimeMS(2000) // 2-second timeout for autocomplete
         .lean();
@@ -286,7 +308,7 @@ export class ProductService {
 
       return { suggestions: formattedSuggestions };
     } catch (error) {
-      // If text search fails, return empty suggestions
+      // If search fails, return empty suggestions
       console.error('Autocomplete error:', error);
       return { suggestions: [] };
     }
