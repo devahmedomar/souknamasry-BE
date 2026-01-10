@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ProductService, type ProductQueryParams } from '../services/productService.js';
+import { ProductService, type ProductQueryParams, type AutocompleteQueryParams } from '../services/productService.js';
 import { ResponseUtil } from '../utils/response.util.js';
 import { TranslatedResponseUtil } from '../utils/translatedResponse.util.js';
 import { HttpStatusCode } from '../utils/errors/error.types.js';
@@ -25,7 +25,27 @@ export class ProductController {
       // Extract query parameters
       const queryParams: ProductQueryParams = {};
 
-      if (req.query.category) queryParams.category = req.query.category as string;
+      // Category handling - support both single and array
+      if (req.query.category) {
+        const categoryParam = req.query.category;
+        if (Array.isArray(categoryParam)) {
+          queryParams.category = categoryParam as string[];
+        } else {
+          queryParams.category = categoryParam as string;
+        }
+      }
+
+      // Alternative multi-category parameter (comma-separated or array)
+      if (req.query.categories) {
+        const categoriesParam = req.query.categories;
+        if (Array.isArray(categoriesParam)) {
+          queryParams.categories = categoriesParam as string[];
+        } else if (typeof categoriesParam === 'string') {
+          // Support comma-separated string: ?categories=id1,id2,id3
+          queryParams.categories = categoriesParam.split(',').map(id => id.trim());
+        }
+      }
+
       if (req.query.minPrice) queryParams.minPrice = Number(req.query.minPrice);
       if (req.query.maxPrice) queryParams.maxPrice = Number(req.query.maxPrice);
       if (req.query.search) queryParams.search = req.query.search as string;
@@ -54,6 +74,48 @@ export class ProductController {
         undefined,
         HttpStatusCode.INTERNAL_SERVER_ERROR
       );
+    }
+  }
+
+  /**
+   * Get autocomplete suggestions for product search
+   * GET /api/products/autocomplete
+   * @param req - Express request with query parameter
+   * @param res - Express response
+   * @param next - Express next function
+   */
+  static async getAutocompleteSuggestions(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> {
+    try {
+      const query = req.query.q as string;
+
+      // Return empty suggestions if query is empty
+      if (!query || query.trim().length === 0) {
+        return ResponseUtil.success(res, { suggestions: [] });
+      }
+
+      // Build query params
+      const queryParams: AutocompleteQueryParams = {
+        query: query.trim(),
+        limit: req.query.limit ? Number(req.query.limit) : 10,
+        category: req.query.category as string | undefined,
+      };
+
+      // Get suggestions from service
+      const result = await ProductService.getAutocompleteSuggestions(queryParams);
+
+      // Set cache headers for performance (5 minutes)
+      res.setHeader('Cache-Control', 'public, max-age=300');
+
+      // Return success response
+      return ResponseUtil.success(res, result);
+    } catch (error) {
+      // Handle errors gracefully - return empty suggestions
+      console.error('Autocomplete error:', error);
+      return ResponseUtil.success(res, { suggestions: [] });
     }
   }
 

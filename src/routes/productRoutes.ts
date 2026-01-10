@@ -1,5 +1,11 @@
 import { Router } from 'express';
 import { ProductController } from '../controllers/productController.js';
+import {
+  validateSearchQuery,
+  validateAutocompleteQuery
+} from '../validators/productValidator.js';
+import { handleValidationErrors } from '../middleware/validation.js';
+import { searchLimiter, autocompleteLimiter } from '../middleware/rateLimiter.js';
 
 /**
  * Product Routes
@@ -59,10 +65,20 @@ const router = Router();
  *           default: 20
  *         description: Number of items per page (max 100)
  *       - in: query
+ *         name: categories
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         style: form
+ *         explode: true
+ *         description: Filter by multiple category IDs (comma-separated or array)
+ *         example: ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
+ *       - in: query
  *         name: sort
  *         schema:
  *           type: string
- *           enum: [newest, price-low, price-high, featured]
+ *           enum: [newest, price-low, price-high, featured, relevance]
  *           default: newest
  *         description: Sort order for products
  *       - in: query
@@ -94,7 +110,95 @@ const router = Router();
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  */
-router.get('/', ProductController.getAllProducts);
+
+/**
+ * @swagger
+ * /api/products/autocomplete:
+ *   get:
+ *     tags:
+ *       - Products - Public
+ *     summary: Get autocomplete suggestions for product search
+ *     description: Returns product suggestions based on search query for typeahead/autocomplete functionality. Only returns in-stock, active products sorted by relevance.
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *           minLength: 1
+ *           maxLength: 100
+ *         description: Search query string
+ *         example: wireless
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 10
+ *           default: 10
+ *         description: Maximum number of suggestions to return
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Optional category filter (MongoDB ObjectId)
+ *         example: 507f1f77bcf86cd799439011
+ *     responses:
+ *       200:
+ *         description: Autocomplete suggestions retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     suggestions:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                           nameAr:
+ *                             type: string
+ *                           slug:
+ *                             type: string
+ *                           price:
+ *                             type: number
+ *                           image:
+ *                             type: string
+ *                           category:
+ *                             type: object
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                               name:
+ *                                 type: string
+ *                               slug:
+ *                                 type: string
+ */
+router.get(
+  '/autocomplete',
+  autocompleteLimiter,
+  validateAutocompleteQuery,
+  handleValidationErrors,
+  ProductController.getAutocompleteSuggestions
+);
+
+router.get(
+  '/',
+  searchLimiter,
+  validateSearchQuery,
+  handleValidationErrors,
+  ProductController.getAllProducts
+);
 
 /**
  * @swagger

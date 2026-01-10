@@ -18,7 +18,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "seed": "tsx src/seeders/seed.ts",
-    "seed:destroy": "tsx src/seeders/seed.ts --destroy"
+    "seed:destroy": "tsx src/seeders/seed.ts --destroy",
+    "create-text-indexes": "tsx src/scripts/createTextIndexes.ts"
   },
   "keywords": [],
   "author": "",

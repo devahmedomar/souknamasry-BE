@@ -190,3 +190,24 @@ productSchema.index({ isFeatured: 1, isActive: 1 });
 
 // Index for sorting by views (popular products)
 productSchema.index({ views: -1 });
+
+/**
+ * Text index for full-text search with weighted fields
+ * Enables MongoDB Full-Text Search with relevance scoring
+ */
+productSchema.index(
+  {
+    name: 'text',
+    nameAr: 'text',
+    description: 'text'
+  },
+  {
+    weights: {
+      name: 10,        // Highest priority for English name
+      nameAr: 10,      // Equal priority for Arabic name
+      description: 3   // Lower priority for descriptions
+    },
+    name: 'product_text_search',
+    default_language: 'english'
+  }
+);

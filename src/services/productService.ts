@@ -2,19 +2,54 @@ import { Product } from '../models/Product.js';
 import { CategoryService } from './categoryService.js';
 import type { FilterQuery, Types } from 'mongoose';
 import type { IProduct } from '../types/product.types.js';
+import mongoose from 'mongoose';
 
 /**
  * Product Query Parameters Interface
  */
 export interface ProductQueryParams {
-  category?: string;
+  category?: string | string[];  // MODIFIED: Support both single and array
+  categories?: string[];         // NEW: Alternative parameter for multi-category
   minPrice?: number;
   maxPrice?: number;
   search?: string;
   page?: number;
   limit?: number;
-  sort?: 'newest' | 'price-low' | 'price-high' | 'featured';
+  sort?: 'newest' | 'price-low' | 'price-high' | 'featured' | 'relevance'; // ADDED: relevance
   inStock?: boolean;
+}
+
+/**
+ * Autocomplete Query Parameters Interface
+ */
+export interface AutocompleteQueryParams {
+  query: string;
+  limit?: number;
+  category?: string;
+}
+
+/**
+ * Autocomplete Response Interface
+ */
+export interface AutocompleteResponse {
+  suggestions: AutocompleteSuggestion[];
+}
+
+/**
+ * Autocomplete Suggestion Interface
+ */
+export interface AutocompleteSuggestion {
+  _id: string;
+  name: string;
+  nameAr?: string;
+  slug: string;
+  price: number;
+  image?: string;
+  category?: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
 }
 
 /**
@@ -51,6 +86,7 @@ export class ProductService {
     // Extract and validate query parameters
     const {
       category,
+      categories,
       minPrice,
       maxPrice,
       search,
@@ -70,9 +106,30 @@ export class ProductService {
       isActive: true, // Only return active products
     };
 
-    // Filter by category (supports category ID)
+    // Filter by category - support both single category and array of categories
     if (category) {
-      filter.category = category;
+      if (Array.isArray(category)) {
+        // Multiple categories provided as array
+        const validCategoryIds = category.filter(id =>
+          mongoose.Types.ObjectId.isValid(id)
+        );
+        if (validCategoryIds.length > 0) {
+          filter.category = { $in: validCategoryIds };
+        }
+      } else {
+        // Single category (backward compatible)
+        filter.category = category;
+      }
+    }
+
+    // Alternative parameter: categories
+    if (categories && Array.isArray(categories)) {
+      const validCategoryIds = categories.filter(id =>
+        mongoose.Types.ObjectId.isValid(id)
+      );
+      if (validCategoryIds.length > 0) {
+        filter.category = { $in: validCategoryIds };
+      }
     }
 
     // Filter by price range
@@ -91,43 +148,63 @@ export class ProductService {
       filter.inStock = inStock;
     }
 
-    // Search in name and description
+    // MongoDB Full-Text Search
+    let textSearchApplied = false;
     if (search && search.trim()) {
-      filter.$or = [
-        { name: { $regex: search.trim(), $options: 'i' } },
-        { description: { $regex: search.trim(), $options: 'i' } },
-      ];
+      const sanitizedSearch = search.trim().replace(/[{}()[\]$]/g, '');
+      if (sanitizedSearch.length > 0) {
+        filter.$text = { $search: sanitizedSearch };
+        textSearchApplied = true;
+      }
     }
 
-    // Build sort query
+    // Build sort query with relevance support
     let sortQuery: any = {};
-    switch (sort) {
-      case 'newest':
-        sortQuery = { createdAt: -1 };
-        break;
-      case 'price-low':
-        sortQuery = { price: 1 };
-        break;
-      case 'price-high':
-        sortQuery = { price: -1 };
-        break;
-      case 'featured':
-        sortQuery = { isFeatured: -1, createdAt: -1 };
-        break;
-      default:
-        sortQuery = { createdAt: -1 };
+    if (textSearchApplied && (sort === 'relevance' || !sort)) {
+      // Sort by text relevance score when search is active
+      sortQuery = { score: { $meta: 'textScore' } };
+    } else {
+      switch (sort) {
+        case 'newest':
+          sortQuery = { createdAt: -1 };
+          break;
+        case 'price-low':
+          sortQuery = { price: 1 };
+          break;
+        case 'price-high':
+          sortQuery = { price: -1 };
+          break;
+        case 'featured':
+          sortQuery = { isFeatured: -1, createdAt: -1 };
+          break;
+        case 'relevance':
+          // If no search term, fall back to newest
+          sortQuery = { createdAt: -1 };
+          break;
+        default:
+          sortQuery = { createdAt: -1 };
+      }
+    }
+
+    // Build base query
+    const baseQuery = Product.find(filter)
+      .select('-supplierInfo -supplierPrice'); // Exclude supplier information
+
+    // Add text score projection if text search is applied
+    if (textSearchApplied) {
+      baseQuery.select({ score: { $meta: 'textScore' } });
     }
 
     // Execute query with pagination
     const [products, total] = await Promise.all([
-      Product.find(filter)
-        .select('-supplierInfo -supplierPrice') // Exclude supplier information
+      baseQuery
         .populate('category', 'name slug image') // Populate category details
         .sort(sortQuery)
         .skip(skip)
         .limit(validatedLimit)
+        .maxTimeMS(5000) // 5-second timeout for performance
         .lean(), // Use lean for better performance
-      Product.countDocuments(filter),
+      Product.countDocuments(filter).maxTimeMS(5000),
     ]);
 
     // Calculate pagination metadata
@@ -142,6 +219,75 @@ export class ProductService {
         limit: validatedLimit,
       },
     };
+  }
+
+  /**
+   * Get autocomplete suggestions for product search
+   * Lightweight query focusing on name matching only
+   * @param queryParams - Autocomplete query parameters
+   * @returns Autocomplete suggestions
+   */
+  static async getAutocompleteSuggestions(
+    queryParams: AutocompleteQueryParams
+  ): Promise<AutocompleteResponse> {
+    const { query, limit = 10, category } = queryParams;
+
+    // Return empty suggestions if query is empty
+    if (!query || query.trim().length === 0) {
+      return { suggestions: [] };
+    }
+
+    const sanitizedQuery = query.trim().substring(0, 100); // Max 100 chars
+    const validatedLimit = Math.min(10, Math.max(1, limit)); // 1-10 range
+
+    // Build filter
+    const filter: FilterQuery<IProduct> = {
+      isActive: true,
+      inStock: true, // Only suggest in-stock products
+    };
+
+    // Category filter (optional)
+    if (category && mongoose.Types.ObjectId.isValid(category)) {
+      filter.category = category;
+    }
+
+    // Use text search
+    filter.$text = { $search: sanitizedQuery };
+
+    try {
+      // Query with minimal fields for performance
+      const suggestions = await Product.find(filter)
+        .select('name nameAr slug price images category')
+        .select({ score: { $meta: 'textScore' } })
+        .populate('category', 'name slug')
+        .sort({ score: { $meta: 'textScore' } })
+        .limit(validatedLimit)
+        .maxTimeMS(2000) // 2-second timeout for autocomplete
+        .lean();
+
+      // Format response
+      const formattedSuggestions: AutocompleteSuggestion[] = suggestions.map(
+        (product: any) => ({
+          _id: product._id.toString(),
+          name: product.name,
+          nameAr: product.nameAr,
+          slug: product.slug,
+          price: product.price,
+          image: product.images?.[0],
+          category: product.category ? {
+            _id: product.category._id.toString(),
+            name: product.category.name,
+            slug: product.category.slug,
+          } : undefined,
+        })
+      );
+
+      return { suggestions: formattedSuggestions };
+    } catch (error) {
+      // If text search fails, return empty suggestions
+      console.error('Autocomplete error:', error);
+      return { suggestions: [] };
+    }
   }
 
   /**
