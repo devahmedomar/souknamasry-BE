@@ -12,6 +12,7 @@ import { addressRoutes } from './routes/addressRoutes.js';
 import { orderRoutes } from './routes/orderRoutes.js';
 import { favouriteRoutes } from './routes/favouriteRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 import { ResponseUtil } from './utils/response.util.js';
 import { AppError } from './utils/errors/AppError.js';
@@ -99,6 +100,7 @@ app.use('/api/addresses', addressRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/favourites', favouriteRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 // Global error handler middleware

@@ -19,6 +19,10 @@ export class CategoryController {
     try {
       const { parent, tree, includeInactive } = req.query;
 
+      // Check if user is admin when includeInactive is requested
+      const isAdmin = (req as any).user?.role === 'admin';
+      const shouldIncludeInactive = includeInactive === 'true' && isAdmin;
+
       // If tree structure is requested
       if (tree === 'true') {
         const categoryTree = await CategoryService.getCategoryTree();
@@ -29,7 +33,7 @@ export class CategoryController {
       if (!parent && tree !== 'true') {
         const categories = await CategoryService.getAllCategories(
           undefined,
-          includeInactive === 'true'
+          shouldIncludeInactive
         );
         return ResponseUtil.success(res, { categories });
       }
@@ -37,7 +41,7 @@ export class CategoryController {
       // Get categories by parent
       const categories = await CategoryService.getAllCategories(
         parent as string,
-        includeInactive === 'true'
+        shouldIncludeInactive
       );
 
       return ResponseUtil.success(res, { categories });
