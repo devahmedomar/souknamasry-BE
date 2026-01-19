@@ -548,4 +548,456 @@ router.delete(
   AdminController.deleteUser
 );
 
+// ============== STATISTICS ==============
+
+/**
+ * @swagger
+ * /api/admin/statistics/dashboard:
+ *   get:
+ *     tags:
+ *       - Admin - Statistics
+ *     summary: Get comprehensive dashboard statistics
+ *     description: Get all statistics including revenue, orders, products, users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Statistics retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.get('/statistics/dashboard', AdminController.getDashboardStatistics);
+
+/**
+ * @swagger
+ * /api/admin/statistics/revenue-trend:
+ *   get:
+ *     tags:
+ *       - Admin - Statistics
+ *     summary: Get revenue trends over time
+ *     description: Get daily revenue data for specified number of days
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: integer
+ *           default: 30
+ *         description: Number of days to analyze
+ *     responses:
+ *       200:
+ *         description: Revenue trends retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.get('/statistics/revenue-trend', AdminController.getRevenueTrend);
+
+/**
+ * @swagger
+ * /api/admin/statistics/sales-by-category:
+ *   get:
+ *     tags:
+ *       - Admin - Statistics
+ *     summary: Get sales breakdown by category
+ *     description: Get category-wise sales data including revenue and order counts
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sales data retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.get('/statistics/sales-by-category', AdminController.getSalesByCategory);
+
+// ============== PRODUCT MANAGEMENT ==============
+
+/**
+ * @swagger
+ * /api/admin/products:
+ *   get:
+ *     tags:
+ *       - Admin - Products
+ *     summary: Get all products including inactive (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: inStock
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Products retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.get('/products', AdminController.getAllProducts);
+
+/**
+ * @swagger
+ * /api/admin/products:
+ *   post:
+ *     tags:
+ *       - Admin - Products
+ *     summary: Create new product (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Product created successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.post('/products', AdminController.createProduct);
+
+/**
+ * @swagger
+ * /api/admin/products/{id}:
+ *   put:
+ *     tags:
+ *       - Admin - Products
+ *     summary: Update product (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Product updated successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.put('/products/:id', AdminController.updateProduct);
+
+/**
+ * @swagger
+ * /api/admin/products/{id}:
+ *   delete:
+ *     tags:
+ *       - Admin - Products
+ *     summary: Delete product (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Product deleted successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.delete('/products/:id', AdminController.deleteProduct);
+
+/**
+ * @swagger
+ * /api/admin/products/{id}/stock:
+ *   patch:
+ *     tags:
+ *       - Admin - Products
+ *     summary: Update product stock (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               stockQuantity:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Stock updated successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.patch('/products/:id/stock', AdminController.updateProductStock);
+
+/**
+ * @swagger
+ * /api/admin/products/{id}/toggle-active:
+ *   patch:
+ *     tags:
+ *       - Admin - Products
+ *     summary: Toggle product active status (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Product status updated successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.patch('/products/:id/toggle-active', AdminController.toggleProductActive);
+
+// ============== ORDER MANAGEMENT ==============
+
+/**
+ * @swagger
+ * /api/admin/orders:
+ *   get:
+ *     tags:
+ *       - Admin - Orders
+ *     summary: Get all orders (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: orderStatus
+ *         schema:
+ *           type: string
+ *           enum: [pending, processing, shipped, delivered, completed, cancelled]
+ *       - in: query
+ *         name: paymentStatus
+ *         schema:
+ *           type: string
+ *           enum: [pending, paid, failed, refunded]
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Orders retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.get('/orders', AdminController.getAllOrders);
+
+/**
+ * @swagger
+ * /api/admin/orders/{id}:
+ *   get:
+ *     tags:
+ *       - Admin - Orders
+ *     summary: Get order by ID (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Order retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.get('/orders/:id', AdminController.getOrderById);
+
+/**
+ * @swagger
+ * /api/admin/orders/{id}/status:
+ *   patch:
+ *     tags:
+ *       - Admin - Orders
+ *     summary: Update order status (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               orderStatus:
+ *                 type: string
+ *                 enum: [pending, processing, shipped, delivered, completed, cancelled]
+ *     responses:
+ *       200:
+ *         description: Order status updated successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.patch('/orders/:id/status', AdminController.updateOrderStatus);
+
+/**
+ * @swagger
+ * /api/admin/orders/{id}/payment-status:
+ *   patch:
+ *     tags:
+ *       - Admin - Orders
+ *     summary: Update payment status (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               paymentStatus:
+ *                 type: string
+ *                 enum: [pending, paid, failed, refunded]
+ *     responses:
+ *       200:
+ *         description: Payment status updated successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.patch('/orders/:id/payment-status', AdminController.updatePaymentStatus);
+
+/**
+ * @swagger
+ * /api/admin/orders/{id}:
+ *   delete:
+ *     tags:
+ *       - Admin - Orders
+ *     summary: Delete order (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Order deleted successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.delete('/orders/:id', AdminController.deleteOrder);
+
 export default router;

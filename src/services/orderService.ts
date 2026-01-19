@@ -206,4 +206,157 @@ export class OrderService {
 
         return order;
     }
+
+    // ============== ADMIN OPERATIONS ==============
+
+    /**
+     * Get all orders for admin
+     * @param page - Page number
+     * @param limit - Items per page
+     * @param filters - Optional filters
+     * @returns Orders with pagination
+     */
+    static async getAllOrdersAdmin(
+        page: number = 1,
+        limit: number = 20,
+        filters?: {
+            orderStatus?: OrderStatus;
+            paymentStatus?: PaymentStatus;
+            search?: string;
+            startDate?: Date;
+            endDate?: Date;
+        }
+    ): Promise<{
+        orders: any[];
+        pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }> {
+        const skip = (page - 1) * limit;
+        const filter: any = {};
+
+        if (filters?.orderStatus) {
+            filter.orderStatus = filters.orderStatus;
+        }
+
+        if (filters?.paymentStatus) {
+            filter.paymentStatus = filters.paymentStatus;
+        }
+
+        if (filters?.startDate || filters?.endDate) {
+            filter.createdAt = {};
+            if (filters.startDate) {
+                filter.createdAt.$gte = filters.startDate;
+            }
+            if (filters.endDate) {
+                filter.createdAt.$lte = filters.endDate;
+            }
+        }
+
+        if (filters?.search) {
+            filter.orderNumber = { $regex: filters.search, $options: 'i' };
+        }
+
+        const [orders, total] = await Promise.all([
+            Order.find(filter)
+                .populate('user', 'firstName lastName email phone')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Order.countDocuments(filter),
+        ]);
+
+        return {
+            orders,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
+
+    /**
+     * Get order by ID (Admin)
+     * @param orderId - Order ID
+     * @returns Order details
+     */
+    static async getOrderByIdAdmin(orderId: string): Promise<any> {
+        const order = await Order.findById(orderId)
+            .populate('user', 'firstName lastName email phone')
+            .lean();
+
+        if (!order) {
+            throw new Error('order.orderNotFound');
+        }
+
+        return order;
+    }
+
+    /**
+     * Update order status (Admin)
+     * @param orderId - Order ID
+     * @param orderStatus - New order status
+     * @returns Updated order
+     */
+    static async updateOrderStatus(
+        orderId: string,
+        orderStatus: OrderStatus
+    ): Promise<any> {
+        const order = await Order.findByIdAndUpdate(
+            orderId,
+            { orderStatus },
+            { new: true }
+        )
+            .populate('user', 'firstName lastName email phone')
+            .lean();
+
+        if (!order) {
+            throw new Error('order.orderNotFound');
+        }
+
+        return order;
+    }
+
+    /**
+     * Update payment status (Admin)
+     * @param orderId - Order ID
+     * @param paymentStatus - New payment status
+     * @returns Updated order
+     */
+    static async updatePaymentStatus(
+        orderId: string,
+        paymentStatus: PaymentStatus
+    ): Promise<any> {
+        const order = await Order.findByIdAndUpdate(
+            orderId,
+            { paymentStatus },
+            { new: true }
+        )
+            .populate('user', 'firstName lastName email phone')
+            .lean();
+
+        if (!order) {
+            throw new Error('order.orderNotFound');
+        }
+
+        return order;
+    }
+
+    /**
+     * Delete order (Admin)
+     * @param orderId - Order ID
+     */
+    static async deleteOrder(orderId: string): Promise<void> {
+        const order = await Order.findByIdAndDelete(orderId);
+
+        if (!order) {
+            throw new Error('order.orderNotFound');
+        }
+    }
 }

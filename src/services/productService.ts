@@ -503,4 +503,174 @@ export class ProductService {
       },
     };
   }
+
+  // ============== ADMIN OPERATIONS ==============
+
+  /**
+   * Get all products for admin (including inactive)
+   * @param page - Page number
+   * @param limit - Items per page
+   * @param filters - Optional filters
+   * @returns Products with pagination
+   */
+  static async getAllProductsAdmin(
+    page: number = 1,
+    limit: number = 20,
+    filters?: {
+      isActive?: boolean;
+      inStock?: boolean;
+      category?: string;
+      search?: string;
+    }
+  ): Promise<ProductListResponse> {
+    const validatedPage = Math.max(1, Number(page));
+    const validatedLimit = Math.min(100, Math.max(1, Number(limit)));
+    const skip = (validatedPage - 1) * validatedLimit;
+
+    const filter: FilterQuery<IProduct> = {};
+
+    if (filters?.isActive !== undefined) {
+      filter.isActive = filters.isActive;
+    }
+
+    if (filters?.inStock !== undefined) {
+      filter.inStock = filters.inStock;
+    }
+
+    if (filters?.category) {
+      filter.category = filters.category;
+    }
+
+    if (filters?.search && filters.search.trim()) {
+      filter.$or = [
+        { name: { $regex: filters.search.trim(), $options: 'i' } },
+        { nameAr: { $regex: filters.search.trim(), $options: 'i' } },
+        { description: { $regex: filters.search.trim(), $options: 'i' } },
+      ];
+    }
+
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+        .populate('category', 'name slug')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(validatedLimit)
+        .lean(),
+      Product.countDocuments(filter),
+    ]);
+
+    const pages = Math.ceil(total / validatedLimit);
+
+    return {
+      products,
+      pagination: {
+        total,
+        page: validatedPage,
+        pages,
+        limit: validatedLimit,
+      },
+    };
+  }
+
+  /**
+   * Create new product (Admin)
+   * @param productData - Product data
+   * @returns Created product
+   */
+  static async createProduct(productData: Partial<IProduct>): Promise<any> {
+    const product = new Product(productData);
+    await product.save();
+    return await Product.findById(product._id)
+      .populate('category', 'name slug')
+      .lean();
+  }
+
+  /**
+   * Update product (Admin)
+   * @param productId - Product ID
+   * @param updateData - Data to update
+   * @returns Updated product
+   */
+  static async updateProduct(
+    productId: string,
+    updateData: Partial<IProduct>
+  ): Promise<any> {
+    const product = await Product.findByIdAndUpdate(productId, updateData, {
+      new: true,
+      runValidators: true,
+    })
+      .populate('category', 'name slug')
+      .lean();
+
+    if (!product) {
+      throw new Error('product.productNotFound');
+    }
+
+    return product;
+  }
+
+  /**
+   * Delete product (Admin)
+   * @param productId - Product ID
+   */
+  static async deleteProduct(productId: string): Promise<void> {
+    const product = await Product.findByIdAndDelete(productId);
+
+    if (!product) {
+      throw new Error('product.productNotFound');
+    }
+  }
+
+  /**
+   * Update product stock (Admin)
+   * @param productId - Product ID
+   * @param stockQuantity - New stock quantity
+   * @returns Updated product
+   */
+  static async updateStock(
+    productId: string,
+    stockQuantity: number
+  ): Promise<any> {
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      {
+        stockQuantity,
+        inStock: stockQuantity > 0,
+      },
+      { new: true }
+    )
+      .populate('category', 'name slug')
+      .lean();
+
+    if (!product) {
+      throw new Error('product.productNotFound');
+    }
+
+    return product;
+  }
+
+  /**
+   * Toggle product active status (Admin)
+   * @param productId - Product ID
+   * @param isActive - Active status
+   * @returns Updated product
+   */
+  static async toggleActiveStatus(
+    productId: string,
+    isActive: boolean
+  ): Promise<any> {
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      { isActive },
+      { new: true }
+    )
+      .populate('category', 'name slug')
+      .lean();
+
+    if (!product) {
+      throw new Error('product.productNotFound');
+    }
+
+    return product;
+  }
 }
