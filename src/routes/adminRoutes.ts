@@ -816,6 +816,82 @@ router.patch('/products/:id/stock', AdminController.updateProductStock);
  */
 router.patch('/products/:id/toggle-active', AdminController.toggleProductActive);
 
+/**
+ * @swagger
+ * /api/admin/products/{id}/featured:
+ *   patch:
+ *     tags:
+ *       - Admin - Products
+ *     summary: Toggle product featured status (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isFeatured
+ *             properties:
+ *               isFeatured:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Product featured status updated successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.patch('/products/:id/featured', AdminController.toggleProductFeatured);
+
+/**
+ * @swagger
+ * /api/admin/products/{id}/sponsored:
+ *   patch:
+ *     tags:
+ *       - Admin - Products
+ *     summary: Toggle product sponsored status (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isSponsored
+ *             properties:
+ *               isSponsored:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Product sponsored status updated successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.patch('/products/:id/sponsored', AdminController.toggleProductSponsored);
+
 // ============== ORDER MANAGEMENT ==============
 
 /**

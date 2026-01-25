@@ -120,6 +120,72 @@ export class ProductController {
   }
 
   /**
+   * Get featured products for home page slider
+   * GET /api/products/featured
+   * @param req - Express request with optional limit query param
+   * @param res - Express response
+   * @param next - Express next function
+   */
+  static async getFeaturedProducts(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> {
+    try {
+      const limit = req.query.limit ? Number(req.query.limit) : 10;
+
+      const products = await ProductService.getFeaturedProducts(limit);
+
+      return ResponseUtil.success(res, { products });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'product.fetchFailed';
+
+      return TranslatedResponseUtil.error(
+        req,
+        res,
+        errorMessage,
+        'PRODUCT_FETCH_ERROR',
+        undefined,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Get sponsored products for home page slider
+   * GET /api/products/sponsored
+   * @param req - Express request with optional limit query param
+   * @param res - Express response
+   * @param next - Express next function
+   */
+  static async getSponsoredProducts(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> {
+    try {
+      const limit = req.query.limit ? Number(req.query.limit) : 10;
+
+      const products = await ProductService.getSponsoredProducts(limit);
+
+      return ResponseUtil.success(res, { products });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'product.fetchFailed';
+
+      return TranslatedResponseUtil.error(
+        req,
+        res,
+        errorMessage,
+        'PRODUCT_FETCH_ERROR',
+        undefined,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
    * Get product by ID
    * GET /api/products/:id
    * @param req - Express request with product ID

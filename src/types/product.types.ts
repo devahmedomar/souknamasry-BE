@@ -30,6 +30,7 @@ export interface IProduct {
   supplierPrice?: number;
   isActive: boolean;
   isFeatured: boolean;
+  isSponsored: boolean;
   views: number;
   createdAt: Date;
   updatedAt: Date;

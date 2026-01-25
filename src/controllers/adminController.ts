@@ -627,6 +627,80 @@ export class AdminController {
     }
   }
 
+  /**
+   * Toggle product featured status
+   * @route PATCH /api/admin/products/:id/featured
+   * @access Admin only
+   */
+  static async toggleProductFeatured(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return ResponseUtil.fail(
+          res,
+          { id: ['Product ID is required'] },
+          HttpStatusCode.BAD_REQUEST
+        );
+      }
+      const { isFeatured } = req.body;
+      const product = await ProductService.toggleFeaturedStatus(id, isFeatured);
+      return ResponseUtil.success(res, { product });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'product.productNotFound') {
+        return ResponseUtil.fail(
+          res,
+          { product: ['Product not found'] },
+          HttpStatusCode.NOT_FOUND
+        );
+      }
+
+      return ResponseUtil.error(
+        res,
+        'Failed to toggle product featured status',
+        'PRODUCT_UPDATE_ERROR',
+        error,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Toggle product sponsored status
+   * @route PATCH /api/admin/products/:id/sponsored
+   * @access Admin only
+   */
+  static async toggleProductSponsored(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return ResponseUtil.fail(
+          res,
+          { id: ['Product ID is required'] },
+          HttpStatusCode.BAD_REQUEST
+        );
+      }
+      const { isSponsored } = req.body;
+      const product = await ProductService.toggleSponsoredStatus(id, isSponsored);
+      return ResponseUtil.success(res, { product });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'product.productNotFound') {
+        return ResponseUtil.fail(
+          res,
+          { product: ['Product not found'] },
+          HttpStatusCode.NOT_FOUND
+        );
+      }
+
+      return ResponseUtil.error(
+        res,
+        'Failed to toggle product sponsored status',
+        'PRODUCT_UPDATE_ERROR',
+        error,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   // ============== ORDER MANAGEMENT ==============
 
   /**

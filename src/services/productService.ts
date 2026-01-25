@@ -315,6 +315,50 @@ export class ProductService {
   }
 
   /**
+   * Get featured products for home page slider
+   * @param limit - Number of featured products to return (default: 10)
+   * @returns List of featured products
+   */
+  static async getFeaturedProducts(limit: number = 10): Promise<any[]> {
+    const validatedLimit = Math.min(20, Math.max(1, limit)); // 1-20 range
+
+    const products = await Product.find({
+      isFeatured: true,
+      isActive: true,
+      inStock: true, // Only show in-stock featured products
+    })
+      .select('-supplierInfo -supplierPrice')
+      .populate('category', 'name slug image')
+      .sort({ createdAt: -1 }) // Newest first
+      .limit(validatedLimit)
+      .lean();
+
+    return products;
+  }
+
+  /**
+   * Get sponsored products for home page slider
+   * @param limit - Number of sponsored products to return (default: 10)
+   * @returns List of sponsored products
+   */
+  static async getSponsoredProducts(limit: number = 10): Promise<any[]> {
+    const validatedLimit = Math.min(20, Math.max(1, limit)); // 1-20 range
+
+    const products = await Product.find({
+      isSponsored: true,
+      isActive: true,
+      inStock: true, // Only show in-stock sponsored products
+    })
+      .select('-supplierInfo -supplierPrice')
+      .populate('category', 'name slug image')
+      .sort({ createdAt: -1 }) // Newest first
+      .limit(validatedLimit)
+      .lean();
+
+    return products;
+  }
+
+  /**
    * Get product by ID with related products
    * @param productId - Product ID
    * @returns Product document with related products
@@ -662,6 +706,56 @@ export class ProductService {
     const product = await Product.findByIdAndUpdate(
       productId,
       { isActive },
+      { new: true }
+    )
+      .populate('category', 'name slug')
+      .lean();
+
+    if (!product) {
+      throw new Error('product.productNotFound');
+    }
+
+    return product;
+  }
+
+  /**
+   * Toggle product featured status (Admin)
+   * @param productId - Product ID
+   * @param isFeatured - Featured status
+   * @returns Updated product
+   */
+  static async toggleFeaturedStatus(
+    productId: string,
+    isFeatured: boolean
+  ): Promise<any> {
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      { isFeatured },
+      { new: true }
+    )
+      .populate('category', 'name slug')
+      .lean();
+
+    if (!product) {
+      throw new Error('product.productNotFound');
+    }
+
+    return product;
+  }
+
+  /**
+   * Toggle product sponsored status (Admin)
+   * @param productId - Product ID
+   * @param isSponsored - Sponsored status
+   * @returns Updated product
+   */
+  static async toggleSponsoredStatus(
+    productId: string,
+    isSponsored: boolean
+  ): Promise<any> {
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      { isSponsored },
       { new: true }
     )
       .populate('category', 'name slug')

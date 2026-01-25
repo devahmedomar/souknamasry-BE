@@ -122,6 +122,11 @@ export const productSchema = new Schema<IProduct, ProductModel, IProductVirtuals
       default: false,
       index: true, // Index for filtering featured products
     },
+    isSponsored: {
+      type: Boolean,
+      default: false,
+      index: true, // Index for filtering sponsored products
+    },
     views: {
       type: Number,
       default: 0,
@@ -187,6 +192,9 @@ productSchema.index({ category: 1, isActive: 1, inStock: 1 });
 
 // Index for filtering featured products
 productSchema.index({ isFeatured: 1, isActive: 1 });
+
+// Index for filtering sponsored products
+productSchema.index({ isSponsored: 1, isActive: 1 });
 
 // Index for sorting by views (popular products)
 productSchema.index({ views: -1 });

@@ -113,6 +113,82 @@ const router = Router();
 
 /**
  * @swagger
+ * /api/products/featured:
+ *   get:
+ *     tags:
+ *       - Products - Public
+ *     summary: Get featured products for home page slider
+ *     description: Returns a list of featured products for displaying on the home page
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 20
+ *           default: 10
+ *         description: Maximum number of featured products to return
+ *     responses:
+ *       200:
+ *         description: Featured products retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     products:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ */
+router.get('/featured', ProductController.getFeaturedProducts);
+
+/**
+ * @swagger
+ * /api/products/sponsored:
+ *   get:
+ *     tags:
+ *       - Products - Public
+ *     summary: Get sponsored products for home page slider
+ *     description: Returns a list of sponsored products for displaying on the home page
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 20
+ *           default: 10
+ *         description: Maximum number of sponsored products to return
+ *     responses:
+ *       200:
+ *         description: Sponsored products retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     products:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ */
+router.get('/sponsored', ProductController.getSponsoredProducts);
+
+/**
+ * @swagger
  * /api/products/autocomplete:
  *   get:
  *     tags:
