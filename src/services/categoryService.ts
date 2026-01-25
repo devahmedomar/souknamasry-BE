@@ -49,12 +49,15 @@ export class CategoryService {
   /**
    * Get category tree (hierarchical structure)
    * Builds a nested tree of all categories
+   * @param includeInactive - Whether to include inactive categories
    * @returns Hierarchical category tree
    */
-  static async getCategoryTree(): Promise<any[]> {
-    // Get all active categories
-    const allCategories = await Category.find({ isActive: true })
-      .select('name slug description image parent')
+  static async getCategoryTree(includeInactive: boolean = false): Promise<any[]> {
+    // Build filter based on includeInactive flag
+    const filter: any = includeInactive ? {} : { isActive: true };
+
+    const allCategories = await Category.find(filter)
+      .select('name slug description image parent isActive')
       .sort({ name: 1 })
       .lean();
 

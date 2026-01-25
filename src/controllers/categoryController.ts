@@ -19,13 +19,13 @@ export class CategoryController {
     try {
       const { parent, tree, includeInactive } = req.query;
 
-      // Check if user is admin when includeInactive is requested
+      // Check if user is admin - admins see ALL categories by default
       const isAdmin = (req as any).user?.role === 'admin';
-      const shouldIncludeInactive = includeInactive === 'true' && isAdmin;
+      const shouldIncludeInactive = isAdmin ? (includeInactive !== 'false') : (includeInactive === 'true');
 
       // If tree structure is requested
       if (tree === 'true') {
-        const categoryTree = await CategoryService.getCategoryTree();
+        const categoryTree = await CategoryService.getCategoryTree(shouldIncludeInactive);
         return ResponseUtil.success(res, { categories: categoryTree });
       }
 
