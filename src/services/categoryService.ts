@@ -427,4 +427,78 @@ export class CategoryService {
 
     return category;
   }
+
+  /**
+   * Get homepage data with leaf categories and their products
+   * Returns all leaf categories (categories with no children) that contain products
+   * Each category includes up to 10 products sorted by createdAt or popularity
+   * @param sortBy - Sort products by 'newest' (createdAt DESC) or 'popular' (views DESC)
+   * @param limit - Maximum number of products per category (default: 10, max: 20)
+   * @returns Array of sections with category metadata and products
+   */
+  static async getHomepageData(
+    sortBy: 'newest' | 'popular' = 'newest',
+    limit: number = 10
+  ): Promise<any[]> {
+    // Validate and sanitize limit
+    const validatedLimit = Math.min(20, Math.max(1, limit));
+
+    // Get all active categories
+    const allCategories = await Category.find({ isActive: true })
+      .select('_id name slug description image parent')
+      .lean();
+
+    // Build a set of category IDs that have children (are parents)
+    const parentCategoryIds = new Set<string>();
+    allCategories.forEach((category) => {
+      if (category.parent) {
+        parentCategoryIds.add(category.parent.toString());
+      }
+    });
+
+    // Identify leaf categories (categories that are not parents)
+    const leafCategories = allCategories.filter(
+      (category) => !parentCategoryIds.has(category._id.toString())
+    );
+
+    // Prepare sort query based on sortBy parameter
+    const sortQuery = sortBy === 'popular' ? { views: -1 as const } : { createdAt: -1 as const };
+
+    // For each leaf category, fetch products
+    const sections = await Promise.all(
+      leafCategories.map(async (category) => {
+        // Fetch products for this category
+        const products = await Product.find({
+          category: category._id,
+          isActive: true,
+          inStock: true, // Only show in-stock products on homepage
+        })
+          .select('-supplierInfo -supplierPrice') // Exclude supplier information
+          .sort(sortQuery)
+          .limit(validatedLimit)
+          .lean();
+
+        // Only include this category if it has products
+        if (products.length > 0) {
+          return {
+            category: {
+              _id: category._id,
+              name: category.name,
+              slug: category.slug,
+              description: category.description,
+              image: category.image,
+            },
+            products,
+          };
+        }
+
+        return null;
+      })
+    );
+
+    // Filter out null entries (categories without products)
+    const validSections = sections.filter((section) => section !== null);
+
+    return validSections;
+  }
 }

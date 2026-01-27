@@ -141,6 +141,80 @@ router.get('/tree', CategoryController.getCategoryTree);
 
 /**
  * @swagger
+ * /api/categories/homepage:
+ *   get:
+ *     tags:
+ *       - Categories - Public
+ *     summary: Get homepage data (leaf categories with products)
+ *     description: Retrieve all leaf categories (categories with no children) that contain products. Each category includes up to 10 products sorted by newest or most popular. Perfect for building dynamic homepage sections.
+ *     parameters:
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [newest, popular]
+ *           default: newest
+ *         description: Sort products by 'newest' (createdAt DESC) or 'popular' (views DESC)
+ *         example: newest
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 20
+ *           default: 10
+ *         description: Maximum number of products per category
+ *         example: 10
+ *     responses:
+ *       200:
+ *         description: Homepage data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     sections:
+ *                       type: array
+ *                       description: Array of category sections, each containing category metadata and products
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           category:
+ *                             type: object
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                                 example: 507f1f77bcf86cd799439011
+ *                               name:
+ *                                 type: string
+ *                                 example: Electronics
+ *                               slug:
+ *                                 type: string
+ *                                 example: electronics
+ *                               description:
+ *                                 type: string
+ *                                 example: Electronic devices and accessories
+ *                               image:
+ *                                 type: string
+ *                                 example: https://example.com/electronics.jpg
+ *                           products:
+ *                             type: array
+ *                             description: Array of products (max 10 per category)
+ *                             items:
+ *                               $ref: '#/components/schemas/Product'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+router.get('/homepage', CategoryController.getHomepageData);
+
+/**
+ * @swagger
  * /api/categories/path/{level1}/{level2}/{level3}/{level4}/{level5}:
  *   get:
  *     tags:

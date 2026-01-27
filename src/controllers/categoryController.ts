@@ -501,4 +501,36 @@ export class CategoryController {
       );
     }
   }
+
+  /**
+   * Get homepage data (leaf categories with products)
+   * @route GET /api/categories/homepage
+   * @query sortBy - Sort products by 'newest' (default) or 'popular'
+   * @query limit - Maximum number of products per category (default: 10, max: 20)
+   * @access Public
+   */
+  static async getHomepageData(req: Request, res: Response): Promise<Response> {
+    try {
+      const { sortBy, limit } = req.query;
+
+      // Validate sortBy parameter
+      const validSortBy = sortBy === 'popular' ? 'popular' : 'newest';
+
+      // Parse and validate limit parameter
+      const parsedLimit = limit ? parseInt(limit as string, 10) : 10;
+      const validatedLimit = isNaN(parsedLimit) ? 10 : parsedLimit;
+
+      const sections = await CategoryService.getHomepageData(validSortBy, validatedLimit);
+
+      return ResponseUtil.success(res, { sections });
+    } catch (error) {
+      return ResponseUtil.error(
+        res,
+        'Failed to retrieve homepage data',
+        'HOMEPAGE_DATA_ERROR',
+        error,
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }
