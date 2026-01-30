@@ -3,6 +3,7 @@ import { AuthController } from '../controllers/authController.js';
 import { validateRegister, validateLogin } from '../validators/authValidator.js';
 import { handleValidationErrors } from '../middleware/validation.js';
 import { verifyToken } from '../middleware/auth.js';
+import { verifyRecaptcha } from '../middleware/recaptcha.js';
 import rateLimit from 'express-rate-limit';
 
 /**
@@ -83,6 +84,7 @@ router.use(authLimiter);
  */
 router.post(
   '/register',
+  verifyRecaptcha,
   validateRegister,
   handleValidationErrors,
   AuthController.register
@@ -125,6 +127,7 @@ router.post(
 router.post(
   '/login',
   loginLimiter,
+  verifyRecaptcha,
   validateLogin,
   handleValidationErrors,
   AuthController.login
