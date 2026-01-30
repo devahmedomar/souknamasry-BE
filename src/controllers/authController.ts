@@ -4,6 +4,7 @@ import { ResponseUtil } from '../utils/response.util.js';
 import { TranslatedResponseUtil } from '../utils/translatedResponse.util.js';
 import { ConflictError } from '../utils/errors/ConflictError.js';
 import { ValidationError } from '../utils/errors/ValidationError.js';
+import { AppError } from '../utils/errors/AppError.js';
 import { HttpStatusCode } from '../utils/errors/error.types.js';
 import type { RegisterRequestDto, LoginRequestDto } from '../dtos/auth.dto.js';
 
@@ -37,13 +38,21 @@ export class AuthController {
     } catch (error) {
       // Handle specific error types
       if (error instanceof ConflictError) {
-        // Email already exists - 409 Conflict
-        // The error message is a translation key (e.g., 'auth.emailAlreadyRegistered')
+        // Phone or email already exists - 409 Conflict
         return TranslatedResponseUtil.fail(
           req,
           res,
-          { email: [error.message] },
+          { phone: [error.message] },
           HttpStatusCode.CONFLICT
+        );
+      }
+
+      if (error instanceof AppError) {
+        return TranslatedResponseUtil.fail(
+          req,
+          res,
+          { error: [error.message] },
+          error.statusCode
         );
       }
 
@@ -73,7 +82,7 @@ export class AuthController {
   }
 
   /**
-   * Login user
+   * Login user with phone and password
    * POST /api/auth/login
    * @param req - Express request with LoginRequestDto in body
    * @param res - Express response
@@ -86,22 +95,30 @@ export class AuthController {
   ): Promise<void | Response> {
     try {
       // Extract login credentials from request body
-      const { email, password } = req.body;
+      const { phone, password } = req.body;
 
       // Delegate authentication to service layer
-      const authResponse = await AuthService.loginUser(email, password);
+      const authResponse = await AuthService.loginUser(phone, password);
 
       // Return success response with 200 OK
       return ResponseUtil.success(res, authResponse);
     } catch (error) {
       // Handle authentication errors
+      if (error instanceof AppError) {
+        return TranslatedResponseUtil.fail(
+          req,
+          res,
+          { credentials: [error.message] },
+          error.statusCode
+        );
+      }
+
       const errorMessage =
         error instanceof Error ? error.message : 'auth.loginFailed';
 
       // Invalid credentials - return 401 Unauthorized
-      // Error messages from service are now translation keys
       if (
-        errorMessage.includes('invalidEmailOrPassword') ||
+        errorMessage.includes('invalidPhoneOrPassword') ||
         errorMessage.includes('accountDeactivated')
       ) {
         return TranslatedResponseUtil.fail(
@@ -157,18 +174,17 @@ export class AuthController {
       // Return success response with user profile
       return ResponseUtil.success(res, user);
     } catch (error) {
-      // Handle user not found error
-      const errorMessage =
-        error instanceof Error ? error.message : 'auth.profileFetchFailed';
-
-      if (errorMessage.includes('userNotFound')) {
+      if (error instanceof AppError) {
         return TranslatedResponseUtil.fail(
           req,
           res,
-          { user: [errorMessage] },
-          HttpStatusCode.NOT_FOUND
+          { user: [error.message] },
+          error.statusCode
         );
       }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'auth.profileFetchFailed';
 
       // Unexpected errors - 500 Internal Server Error
       return TranslatedResponseUtil.error(

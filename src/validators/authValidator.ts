@@ -2,87 +2,76 @@ import { body } from 'express-validator';
 
 /**
  * Password Validation Rules
- * Implements strong password policy
+ * Simple password policy for ease of use
  */
-const PASSWORD_MIN_LENGTH = 8;
-const PASSWORD_REGEX = {
-  UPPERCASE: /[A-Z]/,
-  NUMBER: /[0-9]/,
-  SPECIAL_CHAR: /[!@#$%^&*(),.?":{}|<>]/,
-};
+const PASSWORD_MIN_LENGTH = 6;
+
+/**
+ * Egyptian Phone Number Regex
+ * Matches: +201XXXXXXXXX, 01XXXXXXXXX, 201XXXXXXXXX
+ * Valid prefixes: 010, 011, 012, 015 (Egyptian mobile carriers)
+ */
+const EGYPTIAN_PHONE_REGEX = /^(\+20|0|20)?1[0125][0-9]{8}$/;
 
 /**
  * Register Validation Rules
  * Validates user registration request data
  */
 export const validateRegister = [
-  // Email validation
-  body('email')
+  // Phone validation
+  body('phone')
     .trim()
     .notEmpty()
-    .withMessage('Email is required')
-    .isEmail()
-    .withMessage('Please provide a valid email address')
-    .normalizeEmail()
-    .toLowerCase(),
+    .withMessage('Phone number is required')
+    .matches(EGYPTIAN_PHONE_REGEX)
+    .withMessage('Please provide a valid Egyptian phone number (e.g., 01012345678)'),
 
-  // Password validation with strength requirements
+  // Password validation (simple - just minimum length)
   body('password')
     .notEmpty()
     .withMessage('Password is required')
     .isLength({ min: PASSWORD_MIN_LENGTH })
-    .withMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters long`)
-    .matches(PASSWORD_REGEX.UPPERCASE)
-    .withMessage('Password must contain at least one uppercase letter')
-    .matches(PASSWORD_REGEX.NUMBER)
-    .withMessage('Password must contain at least one number')
-    .matches(PASSWORD_REGEX.SPECIAL_CHAR)
-    .withMessage('Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)'),
+    .withMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters`),
 
-  // First name validation
+  // First name validation (allows Arabic and English)
   body('firstName')
     .trim()
     .notEmpty()
     .withMessage('First name is required')
     .isLength({ min: 2, max: 50 })
-    .withMessage('First name must be between 2 and 50 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
-    .withMessage('First name can only contain letters, spaces, hyphens, and apostrophes'),
+    .withMessage('First name must be between 2 and 50 characters'),
 
-  // Last name validation
+  // Last name validation (allows Arabic and English)
   body('lastName')
     .trim()
     .notEmpty()
     .withMessage('Last name is required')
     .isLength({ min: 2, max: 50 })
-    .withMessage('Last name must be between 2 and 50 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
-    .withMessage('Last name can only contain letters, spaces, hyphens, and apostrophes'),
+    .withMessage('Last name must be between 2 and 50 characters'),
 
-  // Phone validation (optional)
-  body('phone')
+  // Email validation (optional - can be added later)
+  body('email')
     .optional()
     .trim()
-    .matches(/^[\d\s()+-]+$/)
-    .withMessage('Please provide a valid phone number')
-    .isLength({ min: 10, max: 20 })
-    .withMessage('Phone number must be between 10 and 20 characters'),
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail()
+    .toLowerCase(),
 ];
 
 /**
  * Login Validation Rules
  * Validates user login request data
+ * Uses phone number instead of email
  */
 export const validateLogin = [
-  // Email validation
-  body('email')
+  // Phone validation
+  body('phone')
     .trim()
     .notEmpty()
-    .withMessage('Email is required')
-    .isEmail()
-    .withMessage('Please provide a valid email address')
-    .normalizeEmail()
-    .toLowerCase(),
+    .withMessage('Phone number is required')
+    .matches(EGYPTIAN_PHONE_REGEX)
+    .withMessage('Please provide a valid Egyptian phone number'),
 
   // Password validation (basic, no strength check for login)
   body('password')

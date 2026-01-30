@@ -5,19 +5,20 @@ import { UserRole } from '../types/user.types.js';
  * Data Transfer Object for user registration requests
  */
 export interface RegisterRequestDto {
-  email: string;
+  phone: string;
   password: string;
   firstName: string;
   lastName: string;
-  phone?: string;
+  email?: string;
 }
 
 /**
  * Login Request DTO
  * Data Transfer Object for user login requests
+ * Uses phone number instead of email
  */
 export interface LoginRequestDto {
-  email: string;
+  phone: string;
   password: string;
 }
 
@@ -27,12 +28,13 @@ export interface LoginRequestDto {
  */
 export interface UserResponseDto {
   id: string;
-  email: string;
+  phone: string;
+  email?: string;
   firstName: string;
   lastName: string;
-  phone?: string;
   role: UserRole;
   isActive: boolean;
+  isPhoneVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,12 +62,13 @@ export class UserMapper {
   static toResponseDto(user: any): UserResponseDto {
     return {
       id: user._id.toString(),
-      email: user.email,
+      phone: user.phone,
+      email: user.email || undefined,
       firstName: user.firstName,
       lastName: user.lastName,
-      phone: user.phone,
       role: user.role,
       isActive: user.isActive,
+      isPhoneVerified: user.isPhoneVerified || false,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

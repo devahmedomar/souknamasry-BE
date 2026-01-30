@@ -10,17 +10,25 @@ export enum UserRole {
 }
 
 /**
+ * Egyptian phone number validation regex
+ * Matches: +201XXXXXXXXX or 01XXXXXXXXX (Egyptian mobile numbers)
+ * Valid prefixes: 010, 011, 012, 015 (Egyptian mobile carriers)
+ */
+export const EGYPTIAN_PHONE_REGEX = /^(\+20|0)?1[0125][0-9]{8}$/;
+
+/**
  * Interface representing a User document in MongoDB
  * Contains all user-related data fields
  */
 export interface IUser {
-  email: string;
+  phone: string; // Primary identifier - required
+  email?: string; // Optional - can be added later
   password: string;
   firstName: string;
   lastName: string;
-  phone?: string;
   role: UserRole;
   isActive: boolean;
+  isPhoneVerified: boolean;
   imageUrl?: string;
   city?: string;
   createdAt: Date;

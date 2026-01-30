@@ -3,6 +3,7 @@ import { AuthController } from '../controllers/authController.js';
 import { validateRegister, validateLogin } from '../validators/authValidator.js';
 import { handleValidationErrors } from '../middleware/validation.js';
 import { verifyToken } from '../middleware/auth.js';
+import rateLimit from 'express-rate-limit';
 
 /**
  * Authentication Routes
@@ -11,6 +12,27 @@ import { verifyToken } from '../middleware/auth.js';
  */
 const router = Router();
 
+// Rate limiter for auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per 15 minutes
+  message: { status: 'error', message: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiter for login (stricter)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 login attempts per 15 minutes
+  message: { status: 'error', message: 'Too many login attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply general auth rate limiter to all routes
+router.use(authLimiter);
+
 /**
  * @swagger
  * /api/auth/register:
@@ -18,7 +40,7 @@ const router = Router();
  *     tags:
  *       - Authentication
  *     summary: Register a new user account
- *     description: Creates a new customer account with email and password. Password must contain uppercase, number, and special character.
+ *     description: Creates a new customer account with phone number
  *     requestBody:
  *       required: true
  *       content:
@@ -26,82 +48,44 @@ const router = Router();
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - phone
  *               - password
  *               - firstName
  *               - lastName
  *             properties:
- *               email:
+ *               phone:
  *                 type: string
- *                 format: email
- *                 example: ahmed@example.com
- *                 description: User email address (must be unique)
+ *                 example: "01012345678"
+ *                 description: Egyptian phone number
  *               password:
  *                 type: string
  *                 format: password
  *                 minLength: 8
  *                 example: SecurePass123!
- *                 description: Password must be at least 8 characters and contain uppercase letter, number, and special character (!@#$%^&*(),.?":{}|<>)
  *               firstName:
  *                 type: string
- *                 minLength: 2
- *                 maxLength: 50
  *                 example: Ahmed
- *                 description: User first name (letters, spaces, hyphens, apostrophes only)
  *               lastName:
  *                 type: string
- *                 minLength: 2
- *                 maxLength: 50
  *                 example: Mohamed
- *                 description: User last name (letters, spaces, hyphens, apostrophes only)
- *               phone:
+ *               email:
  *                 type: string
+ *                 format: email
  *                 nullable: true
- *                 example: "+201234567890"
- *                 description: Phone number (10-20 characters, optional)
+ *                 description: Optional email address
  *     responses:
  *       201:
  *         description: User successfully registered
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
- *                     token:
- *                       type: string
- *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       400:
- *         $ref: '#/components/responses/ValidationError'
+ *         description: Validation error
  *       409:
- *         description: Email already exists
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: error
- *                 message:
- *                   type: string
- *                   example: Email already exists
- *                 code:
- *                   type: string
- *                   example: CONFLICT
+ *         description: Phone or email already exists
  */
 router.post(
   '/register',
-  validateRegister,           // Validate request body
-  handleValidationErrors,     // Handle validation errors
-  AuthController.register     // Controller handler
+  validateRegister,
+  handleValidationErrors,
+  AuthController.register
 );
 
 /**
@@ -111,7 +95,7 @@ router.post(
  *     tags:
  *       - Authentication
  *     summary: Authenticate user and get JWT token
- *     description: Login with email and password to receive a JWT token for authenticated requests
+ *     description: Login with phone number and password
  *     requestBody:
  *       required: true
  *       content:
@@ -119,63 +103,31 @@ router.post(
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - phone
  *               - password
  *             properties:
- *               email:
+ *               phone:
  *                 type: string
- *                 format: email
- *                 example: ahmed@example.com
- *                 description: Registered user email address
+ *                 example: "+201012345678"
+ *                 description: Registered Egyptian phone number
  *               password:
  *                 type: string
  *                 format: password
  *                 example: SecurePass123!
- *                 description: User password
  *     responses:
  *       200:
  *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
- *                     token:
- *                       type: string
- *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *                       description: JWT token to be used in Authorization header
- *       400:
- *         $ref: '#/components/responses/ValidationError'
  *       401:
  *         description: Invalid credentials
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: error
- *                 message:
- *                   type: string
- *                   example: Invalid email or password
- *                 code:
- *                   type: string
- *                   example: UNAUTHORIZED
+ *       429:
+ *         description: Too many login attempts
  */
 router.post(
   '/login',
-  validateLogin,              // Validate request body
-  handleValidationErrors,     // Handle validation errors
-  AuthController.login        // Controller handler
+  loginLimiter,
+  validateLogin,
+  handleValidationErrors,
+  AuthController.login
 );
 
 /**
@@ -185,45 +137,19 @@ router.post(
  *     tags:
  *       - Authentication
  *     summary: Get current user profile
- *     description: Retrieve the authenticated user's profile information. Requires valid JWT token in Authorization header.
+ *     description: Retrieve the authenticated user's profile information
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User profile retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   $ref: '#/components/schemas/User'
  *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       403:
- *         description: Token expired or invalid
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: error
- *                 message:
- *                   type: string
- *                   example: Token expired or invalid
- *                 code:
- *                   type: string
- *                   example: FORBIDDEN
+ *         description: Unauthorized
  */
 router.get(
   '/profile',
-  verifyToken,                // JWT authentication middleware
-  AuthController.getProfile   // Controller handler
+  verifyToken,
+  AuthController.getProfile
 );
 
 /**
@@ -233,33 +159,19 @@ router.get(
  *     tags:
  *       - Authentication
  *     summary: Logout user
- *     description: Logout the authenticated user. Client should discard the JWT token after receiving success response.
+ *     description: Client should discard the JWT token
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Logout successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: object
- *                   properties:
- *                     message:
- *                       type: string
- *                       example: Logged out successfully
  *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
+ *         description: Unauthorized
  */
 router.post(
   '/logout',
-  verifyToken,                // JWT authentication middleware
-  AuthController.logout       // Controller handler
+  verifyToken,
+  AuthController.logout
 );
 
 export default router;

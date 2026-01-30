@@ -1,6 +1,8 @@
 import { User } from '../models/User.js';
 import type { UserDocument } from '../types/user.types.js';
 import { ConflictError } from '../utils/errors/ConflictError.js';
+import { AppError } from '../utils/errors/AppError.js';
+import { HttpStatusCode } from '../utils/errors/error.types.js';
 import { JwtUtil, type IJwtPayload } from '../utils/jwt.util.js';
 import {
   type RegisterRequestDto,
@@ -11,36 +13,64 @@ import {
 /**
  * Authentication Service
  * Handles business logic for user authentication operations
- * Follows Service Layer pattern - contains reusable, testable business logic
+ * Uses phone number as primary identifier
  */
 export class AuthService {
+  /**
+   * Normalize phone number to consistent format
+   */
+  private static normalizePhone(phone: string): string {
+    let normalized = phone.replace(/[^\d+]/g, '');
+
+    if (normalized.startsWith('01')) {
+      normalized = '+20' + normalized.substring(1);
+    } else if (normalized.startsWith('201')) {
+      normalized = '+' + normalized;
+    } else if (!normalized.startsWith('+20')) {
+      normalized = '+20' + normalized.replace(/^0+/, '');
+    }
+
+    return normalized;
+  }
+
   /**
    * Register a new user
    * @param registerData - User registration data
    * @returns Auth response with user data and JWT token
-   * @throws ConflictError if email already exists
-   * @throws Error for database or validation errors
+   * @throws ConflictError if phone already exists
    */
   static async registerUser(
     registerData: RegisterRequestDto
   ): Promise<AuthResponseDto> {
-    const { email, password, firstName, lastName, phone } = registerData;
+    const { phone, password, firstName, lastName, email } = registerData;
 
-    // Check if user with email already exists
-    const existingUser = await User.findOne({ email });
+    // Normalize phone number
+    const normalizedPhone = this.normalizePhone(phone);
+
+    // Check if user with phone already exists
+    const existingUser = await User.findOne({ phone: normalizedPhone });
 
     if (existingUser) {
-      throw new ConflictError('auth.emailAlreadyRegistered');
+      throw new ConflictError('auth.phoneAlreadyRegistered');
+    }
+
+    // Check if email is provided and already exists
+    if (email) {
+      const emailExists = await User.findOne({ email: email.toLowerCase() });
+      if (emailExists) {
+        throw new ConflictError('auth.emailAlreadyRegistered');
+      }
     }
 
     // Create new user instance
     // Password will be automatically hashed by pre-save hook in schema
     const user = new User({
-      email,
+      phone: normalizedPhone,
       password,
       firstName,
       lastName,
-      phone,
+      email: email?.toLowerCase(),
+      isPhoneVerified: false, // Can be verified later via Firebase
       // role defaults to 'customer' per schema
       // isActive defaults to true per schema
     });
@@ -51,7 +81,7 @@ export class AuthService {
     // Generate JWT token payload
     const tokenPayload: IJwtPayload = {
       userId: savedUser._id.toString(),
-      email: savedUser.email,
+      phone: savedUser.phone,
       role: savedUser.role,
     };
 
@@ -63,33 +93,35 @@ export class AuthService {
   }
 
   /**
-   * Authenticate user login
-   * @param email - User email
+   * Authenticate user login with phone and password
+   * @param phone - User phone number
    * @param password - User password (plain text)
    * @returns Auth response with user data and JWT token
-   * @throws ValidationError if credentials are invalid
+   * @throws AppError if credentials are invalid
    */
   static async loginUser(
-    email: string,
+    phone: string,
     password: string
   ): Promise<AuthResponseDto> {
-    // Find user by email and include password field (normally excluded)
-    const user = await User.findOne({ email }).select('+password');
+    const normalizedPhone = this.normalizePhone(phone);
+
+    // Find user by phone and include password field (normally excluded)
+    const user = await User.findOne({ phone: normalizedPhone }).select('+password');
 
     // Check if user exists and password is correct
     if (!user || !(await user.comparePassword(password))) {
-      throw new Error('auth.invalidEmailOrPassword');
+      throw new AppError('auth.invalidPhoneOrPassword', HttpStatusCode.UNAUTHORIZED);
     }
 
     // Check if user account is active
     if (!user.isActive) {
-      throw new Error('auth.accountDeactivated');
+      throw new AppError('auth.accountDeactivated', HttpStatusCode.FORBIDDEN);
     }
 
     // Generate JWT token payload
     const tokenPayload: IJwtPayload = {
       userId: user._id.toString(),
-      email: user.email,
+      phone: user.phone,
       role: user.role,
     };
 
@@ -104,7 +136,7 @@ export class AuthService {
    * Get user profile by ID
    * @param userId - User ID from JWT token
    * @returns User profile data (password excluded)
-   * @throws Error if user not found
+   * @throws AppError if user not found
    */
   static async getUserProfile(userId: string): Promise<UserDocument> {
     // Find user by ID and exclude password field
@@ -112,7 +144,50 @@ export class AuthService {
 
     // Check if user exists
     if (!user) {
-      throw new Error('auth.userNotFound');
+      throw new AppError('auth.userNotFound', HttpStatusCode.NOT_FOUND);
+    }
+
+    return user;
+  }
+
+  /**
+   * Check if phone number is already registered
+   * @param phone - Phone number to check
+   * @returns true if phone is registered
+   */
+  static async isPhoneRegistered(phone: string): Promise<boolean> {
+    const normalizedPhone = this.normalizePhone(phone);
+    const user = await User.findOne({ phone: normalizedPhone });
+    return !!user;
+  }
+
+  /**
+   * Update user's email address
+   * @param userId - User ID
+   * @param email - New email address
+   * @returns Updated user document
+   */
+  static async updateEmail(userId: string, email: string): Promise<UserDocument> {
+    const normalizedEmail = email.toLowerCase();
+
+    // Check if email already exists
+    const emailExists = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: userId },
+    });
+
+    if (emailExists) {
+      throw new ConflictError('auth.emailAlreadyRegistered');
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { email: normalizedEmail },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      throw new AppError('auth.userNotFound', HttpStatusCode.NOT_FOUND);
     }
 
     return user;

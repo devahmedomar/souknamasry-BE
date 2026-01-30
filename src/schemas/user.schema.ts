@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import {
   UserRole,
   EMAIL_REGEX,
+  EGYPTIAN_PHONE_REGEX,
   type IUser,
   type UserModel,
   type IUserMethods,
@@ -14,15 +15,30 @@ import {
  */
 export const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
+    phone: {
+      type: String,
+      required: [true, 'Phone number is required'],
+      unique: true,
+      trim: true,
+      index: true,
+      validate: {
+        validator: function (phone: string): boolean {
+          return EGYPTIAN_PHONE_REGEX.test(phone);
+        },
+        message: 'Please provide a valid Egyptian phone number',
+      },
+    },
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      // Email is now optional - can be added later to profile
       unique: true,
+      sparse: true, // Allows multiple null/undefined values
       lowercase: true,
       trim: true,
       validate: {
         validator: function (email: string): boolean {
-          return EMAIL_REGEX.test(email);
+          // Only validate if email is provided
+          return !email || EMAIL_REGEX.test(email);
         },
         message: 'Please provide a valid email address',
       },
@@ -44,10 +60,6 @@ export const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       required: [true, 'Last name is required'],
       trim: true,
     },
-    phone: {
-      type: String,
-      trim: true,
-    },
     role: {
       type: String,
       enum: {
@@ -59,6 +71,10 @@ export const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isPhoneVerified: {
+      type: Boolean,
+      default: false,
     },
     imageUrl: {
       type: String,

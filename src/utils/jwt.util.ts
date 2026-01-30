@@ -4,10 +4,11 @@ import { UserRole } from '../types/user.types.js';
 /**
  * JWT Token Payload Interface
  * Defines the structure of data encoded in JWT tokens
+ * Uses phone as primary identifier (email is optional)
  */
 export interface IJwtPayload {
   userId: string;
-  email: string;
+  phone: string;
   role: UserRole;
 }
 

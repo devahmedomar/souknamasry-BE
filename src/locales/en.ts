@@ -15,8 +15,10 @@ export const en: TranslationKeys = {
   },
 
   auth: {
+    phoneAlreadyRegistered: 'Phone number already registered',
     emailAlreadyRegistered: 'Email already registered',
     userRegisteredSuccessfully: 'User registered successfully',
+    invalidPhoneOrPassword: 'Invalid phone number or password',
     invalidEmailOrPassword: 'Invalid email or password',
     accountDeactivated: 'Account is deactivated. Please contact support.',
     loginSuccessful: 'Login successful',
@@ -29,6 +31,26 @@ export const en: TranslationKeys = {
     profileFetchFailed: 'Failed to fetch user profile',
     unauthorized: 'Unauthorized. Please login first.',
     adminAccessRequired: 'Admin access required',
+  },
+
+  otp: {
+    sent: 'OTP sent successfully',
+    verified: 'OTP verified successfully',
+    invalid: 'Invalid OTP code',
+    expired: 'OTP has expired. Please request a new one.',
+    maxAttempts: 'Maximum attempts exceeded. Please request a new OTP.',
+    sendFailed: 'Failed to send OTP',
+    verifyFailed: 'Failed to verify OTP',
+    resendFailed: 'Failed to resend OTP',
+    cooldown: 'Please wait before requesting another OTP',
+    tokenInvalid: 'Invalid OTP verification token',
+    tokenExpired: 'OTP verification token has expired',
+  },
+
+  sms: {
+    allProvidersFailed: 'SMS service temporarily unavailable. Please try again later.',
+    quotaExceeded: 'SMS quota exceeded. Please try again later.',
+    sendFailed: 'Failed to send SMS',
   },
 
   validation: {

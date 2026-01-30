@@ -15,8 +15,10 @@ export const ar: TranslationKeys = {
   },
 
   auth: {
+    phoneAlreadyRegistered: 'رقم الهاتف مسجل بالفعل',
     emailAlreadyRegistered: 'البريد الإلكتروني مسجل بالفعل',
     userRegisteredSuccessfully: 'تم تسجيل المستخدم بنجاح',
+    invalidPhoneOrPassword: 'رقم الهاتف أو كلمة المرور غير صحيحة',
     invalidEmailOrPassword: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
     accountDeactivated: 'الحساب معطل. يرجى التواصل مع الدعم الفني.',
     loginSuccessful: 'تم تسجيل الدخول بنجاح',
@@ -29,6 +31,26 @@ export const ar: TranslationKeys = {
     profileFetchFailed: 'فشل في جلب ملف المستخدم',
     unauthorized: 'غير مصرح. يرجى تسجيل الدخول أولاً.',
     adminAccessRequired: 'يتطلب صلاحيات المسؤول',
+  },
+
+  otp: {
+    sent: 'تم إرسال رمز التحقق بنجاح',
+    verified: 'تم التحقق من الرمز بنجاح',
+    invalid: 'رمز التحقق غير صحيح',
+    expired: 'انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.',
+    maxAttempts: 'تم تجاوز الحد الأقصى للمحاولات. يرجى طلب رمز جديد.',
+    sendFailed: 'فشل في إرسال رمز التحقق',
+    verifyFailed: 'فشل في التحقق من الرمز',
+    resendFailed: 'فشل في إعادة إرسال رمز التحقق',
+    cooldown: 'يرجى الانتظار قبل طلب رمز جديد',
+    tokenInvalid: 'رمز التحقق غير صالح',
+    tokenExpired: 'انتهت صلاحية رمز التحقق',
+  },
+
+  sms: {
+    allProvidersFailed: 'خدمة الرسائل غير متاحة مؤقتاً. يرجى المحاولة لاحقاً.',
+    quotaExceeded: 'تم تجاوز حد الرسائل. يرجى المحاولة لاحقاً.',
+    sendFailed: 'فشل في إرسال الرسالة',
   },
 
   validation: {

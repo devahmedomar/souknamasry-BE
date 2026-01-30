@@ -26,8 +26,10 @@ export interface TranslationKeys {
 
   // Authentication messages
   auth: {
+    phoneAlreadyRegistered: string;
     emailAlreadyRegistered: string;
     userRegisteredSuccessfully: string;
+    invalidPhoneOrPassword: string;
     invalidEmailOrPassword: string;
     accountDeactivated: string;
     loginSuccessful: string;
@@ -40,6 +42,28 @@ export interface TranslationKeys {
     profileFetchFailed: string;
     unauthorized: string;
     adminAccessRequired: string;
+  };
+
+  // OTP messages
+  otp: {
+    sent: string;
+    verified: string;
+    invalid: string;
+    expired: string;
+    maxAttempts: string;
+    sendFailed: string;
+    verifyFailed: string;
+    resendFailed: string;
+    cooldown: string;
+    tokenInvalid: string;
+    tokenExpired: string;
+  };
+
+  // SMS messages
+  sms: {
+    allProvidersFailed: string;
+    quotaExceeded: string;
+    sendFailed: string;
   };
 
   // Validation messages
