@@ -796,8 +796,9 @@ export class AdminController {
           HttpStatusCode.BAD_REQUEST
         );
       }
-      const { orderStatus } = req.body;
-      const order = await OrderService.updateOrderStatus(id, orderStatus);
+      const { orderStatus, status } = req.body;
+      const newStatus = orderStatus || status;
+      const order = await OrderService.updateOrderStatus(id, newStatus);
       return ResponseUtil.success(res, { order });
     } catch (error) {
       if (error instanceof Error && error.message === 'order.orderNotFound') {
