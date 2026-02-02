@@ -310,7 +310,7 @@ export class OrderService {
     ): Promise<any> {
         const order = await Order.findByIdAndUpdate(
             orderId,
-            { orderStatus },
+            { status: orderStatus },
             { new: true }
         )
             .populate('user', 'firstName lastName email phone')
