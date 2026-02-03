@@ -86,7 +86,15 @@ const router = Router();
  *         schema:
  *           type: boolean
  *         description: Filter by stock availability
+  *         description: Filter by stock availability
  *         example: true
+ *       - in: query
+ *         name: mannequinSlot
+ *         schema:
+ *           type: string
+ *           enum: [top, bottom, shoes]
+ *         description: Filter by mannequin slot (Virtual Try-On)
+ *         example: top
  *     responses:
  *       200:
  *         description: Products retrieved successfully
