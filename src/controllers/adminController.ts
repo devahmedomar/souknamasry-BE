@@ -442,6 +442,7 @@ export class AdminController {
       if (inStock !== undefined) filters.inStock = inStock === 'true';
       if (category) filters.category = category as string;
       if (search) filters.search = search as string;
+      if (req.query.mannequinSlot) filters.mannequinSlot = req.query.mannequinSlot as string;
 
       const result = await ProductService.getAllProductsAdmin(
         Number(page),

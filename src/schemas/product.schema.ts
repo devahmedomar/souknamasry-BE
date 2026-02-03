@@ -132,6 +132,11 @@ export const productSchema = new Schema<IProduct, ProductModel, IProductVirtuals
       default: 0,
       min: [0, 'Views cannot be negative'],
     },
+    mannequinSlot: {
+      type: String,
+      enum: ['top', 'bottom', 'shoes'],
+      default: null,
+    },
   },
   {
     timestamps: true, // Automatically manage createdAt and updatedAt

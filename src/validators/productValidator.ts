@@ -69,6 +69,11 @@ export const validateSearchQuery = [
     .optional()
     .isBoolean()
     .withMessage('inStock must be a boolean value'),
+
+  query('mannequinSlot')
+    .optional()
+    .isIn(['top', 'bottom', 'shoes'])
+    .withMessage('Invalid mannequin slot'),
 ];
 
 /**

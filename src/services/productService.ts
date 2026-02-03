@@ -17,6 +17,7 @@ export interface ProductQueryParams {
   limit?: number;
   sort?: 'newest' | 'price-low' | 'price-high' | 'featured' | 'relevance'; // ADDED: relevance
   inStock?: boolean;
+  mannequinSlot?: 'top' | 'bottom' | 'shoes';
 }
 
 /**
@@ -94,6 +95,7 @@ export class ProductService {
       limit = 20,
       sort = 'newest',
       inStock,
+      mannequinSlot,
     } = queryParams;
 
     // Validate and sanitize pagination parameters
@@ -146,6 +148,11 @@ export class ProductService {
     // Filter by stock status
     if (inStock !== undefined) {
       filter.inStock = inStock;
+    }
+
+    // Filter by mannequinSlot
+    if (mannequinSlot) {
+      filter.mannequinSlot = mannequinSlot;
     }
 
     // Search implementation
@@ -565,6 +572,7 @@ export class ProductService {
       inStock?: boolean;
       category?: string;
       search?: string;
+      mannequinSlot?: string;
     }
   ): Promise<ProductListResponse> {
     const validatedPage = Math.max(1, Number(page));
@@ -583,6 +591,10 @@ export class ProductService {
 
     if (filters?.category) {
       filter.category = filters.category;
+    }
+
+    if (filters?.mannequinSlot) {
+      filter.mannequinSlot = filters.mannequinSlot as any;
     }
 
     if (filters?.search && filters.search.trim()) {

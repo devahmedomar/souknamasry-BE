@@ -34,6 +34,7 @@ export interface IProduct {
   views: number;
   createdAt: Date;
   updatedAt: Date;
+  mannequinSlot?: 'top' | 'bottom' | 'shoes' | null;
 }
 
 /**

@@ -55,6 +55,9 @@ export class ProductController {
       if (req.query.inStock !== undefined) {
         queryParams.inStock = req.query.inStock === 'true';
       }
+      if (req.query.mannequinSlot) {
+        queryParams.mannequinSlot = req.query.mannequinSlot as any;
+      }
 
       // Get products from service
       const result = await ProductService.getAllProducts(queryParams);
