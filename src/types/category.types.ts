@@ -7,7 +7,9 @@ import { Document, Model, Types } from 'mongoose';
  */
 export interface ICategory {
   name: string;
+  nameAr?: string;
   description?: string;
+  descriptionAr?: string;
   slug: string;
   image?: string;
   isActive: boolean;

@@ -18,12 +18,26 @@ export const validateCreateCategory = [
     .isLength({ min: 2, max: 100 })
     .withMessage('Category name must be between 2 and 100 characters'),
 
+  // Arabic name validation (optional)
+  body('nameAr')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Category Arabic name cannot exceed 100 characters'),
+
   // Description validation (optional)
   body('description')
     .optional()
     .trim()
     .isLength({ max: 500 })
     .withMessage('Description cannot exceed 500 characters'),
+
+  // Arabic description validation (optional)
+  body('descriptionAr')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Arabic description cannot exceed 500 characters'),
 
   // Image validation (optional)
   body('image')
@@ -75,12 +89,26 @@ export const validateUpdateCategory = [
     .isLength({ min: 2, max: 100 })
     .withMessage('Category name must be between 2 and 100 characters'),
 
+  // Arabic name validation (optional)
+  body('nameAr')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Category Arabic name cannot exceed 100 characters'),
+
   // Description validation (optional)
   body('description')
     .optional()
     .trim()
     .isLength({ max: 500 })
     .withMessage('Description cannot exceed 500 characters'),
+
+  // Arabic description validation (optional)
+  body('descriptionAr')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Arabic description cannot exceed 500 characters'),
 
   // Image validation (optional)
   body('image')

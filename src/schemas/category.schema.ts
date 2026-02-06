@@ -15,10 +15,20 @@ export const categorySchema = new Schema<ICategory, CategoryModel>(
       trim: true,
       maxlength: [100, 'Category name cannot exceed 100 characters'],
     },
+    nameAr: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Category Arabic name cannot exceed 100 characters'],
+    },
     description: {
       type: String,
       trim: true,
       maxlength: [500, 'Description cannot exceed 500 characters'],
+    },
+    descriptionAr: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Arabic description cannot exceed 500 characters'],
     },
     slug: {
       type: String,

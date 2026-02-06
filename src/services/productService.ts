@@ -169,6 +169,7 @@ export class ProductService {
           { name: { $regex: escapedSearch, $options: 'i' } },
           { nameAr: { $regex: escapedSearch, $options: 'i' } },
           { description: { $regex: escapedSearch, $options: 'i' } },
+          { descriptionAr: { $regex: escapedSearch, $options: 'i' } },
         ];
       } else {
         // Use text search for longer queries (better performance)
@@ -220,7 +221,7 @@ export class ProductService {
     // Execute query with pagination
     const [products, total] = await Promise.all([
       baseQuery
-        .populate('category', 'name slug image') // Populate category details
+        .populate('category', 'name nameAr slug image') // Populate category details
         .sort(sortQuery)
         .skip(skip)
         .limit(validatedLimit)
@@ -288,7 +289,7 @@ export class ProductService {
       // Query with minimal fields for performance
       const suggestions = await Product.find(filter)
         .select('name nameAr slug price images category')
-        .populate('category', 'name slug')
+        .populate('category', 'name nameAr slug')
         .sort({ name: 1 }) // Sort alphabetically
         .limit(validatedLimit)
         .maxTimeMS(2000) // 2-second timeout for autocomplete
@@ -335,7 +336,7 @@ export class ProductService {
       inStock: true, // Only show in-stock featured products
     })
       .select('-supplierInfo -supplierPrice')
-      .populate('category', 'name slug image')
+      .populate('category', 'name nameAr slug image')
       .sort({ createdAt: -1 }) // Newest first
       .limit(validatedLimit)
       .lean();
@@ -357,7 +358,7 @@ export class ProductService {
       inStock: true, // Only show in-stock sponsored products
     })
       .select('-supplierInfo -supplierPrice')
-      .populate('category', 'name slug image')
+      .populate('category', 'name nameAr slug image')
       .sort({ createdAt: -1 }) // Newest first
       .limit(validatedLimit)
       .lean();
@@ -376,7 +377,7 @@ export class ProductService {
       isActive: true,
     })
       .select('-supplierInfo -supplierPrice') // Exclude supplier information
-      .populate('category', 'name slug image description')
+      .populate('category', 'name nameAr slug image description descriptionAr')
       .lean();
 
     if (!product) {
@@ -413,7 +414,7 @@ export class ProductService {
       isActive: true,
     })
       .select('-supplierInfo -supplierPrice') // Exclude supplier information
-      .populate('category', 'name slug image description')
+      .populate('category', 'name nameAr slug image description descriptionAr')
       .lean();
 
     if (!product) {
@@ -506,7 +507,9 @@ export class ProductService {
     if (search && search.trim()) {
       filter.$or = [
         { name: { $regex: search.trim(), $options: 'i' } },
+        { nameAr: { $regex: search.trim(), $options: 'i' } },
         { description: { $regex: search.trim(), $options: 'i' } },
+        { descriptionAr: { $regex: search.trim(), $options: 'i' } },
       ];
     }
 
@@ -533,7 +536,7 @@ export class ProductService {
     const [products, total] = await Promise.all([
       Product.find(filter)
         .select('-supplierInfo -supplierPrice')
-        .populate('category', 'name slug image')
+        .populate('category', 'name nameAr slug image')
         .sort(sortQuery)
         .skip(skip)
         .limit(validatedLimit)
@@ -602,12 +605,13 @@ export class ProductService {
         { name: { $regex: filters.search.trim(), $options: 'i' } },
         { nameAr: { $regex: filters.search.trim(), $options: 'i' } },
         { description: { $regex: filters.search.trim(), $options: 'i' } },
+        { descriptionAr: { $regex: filters.search.trim(), $options: 'i' } },
       ];
     }
 
     const [products, total] = await Promise.all([
       Product.find(filter)
-        .populate('category', 'name slug')
+        .populate('category', 'name nameAr slug')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(validatedLimit)
@@ -637,7 +641,7 @@ export class ProductService {
     const product = new Product(productData);
     await product.save();
     return await Product.findById(product._id)
-      .populate('category', 'name slug')
+      .populate('category', 'name nameAr slug')
       .lean();
   }
 
@@ -655,7 +659,7 @@ export class ProductService {
       new: true,
       runValidators: true,
     })
-      .populate('category', 'name slug')
+      .populate('category', 'name nameAr slug')
       .lean();
 
     if (!product) {
@@ -695,7 +699,7 @@ export class ProductService {
       },
       { new: true }
     )
-      .populate('category', 'name slug')
+      .populate('category', 'name nameAr slug')
       .lean();
 
     if (!product) {
@@ -720,7 +724,7 @@ export class ProductService {
       { isActive },
       { new: true }
     )
-      .populate('category', 'name slug')
+      .populate('category', 'name nameAr slug')
       .lean();
 
     if (!product) {
@@ -745,7 +749,7 @@ export class ProductService {
       { isFeatured },
       { new: true }
     )
-      .populate('category', 'name slug')
+      .populate('category', 'name nameAr slug')
       .lean();
 
     if (!product) {
@@ -770,7 +774,7 @@ export class ProductService {
       { isSponsored },
       { new: true }
     )
-      .populate('category', 'name slug')
+      .populate('category', 'name nameAr slug')
       .lean();
 
     if (!product) {

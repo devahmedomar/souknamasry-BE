@@ -14,7 +14,7 @@ export class CategoryService {
    */
   static async getRootCategories(): Promise<any[]> {
     return await Category.find({ parent: null, isActive: true })
-      .select('name slug description image')
+      .select('name nameAr slug description descriptionAr image')
       .sort({ name: 1 })
       .lean();
   }
@@ -40,8 +40,8 @@ export class CategoryService {
     }
 
     return await Category.find(filter)
-      .populate('parent', 'name slug')
-      .select('name slug description image parent isActive')
+      .populate('parent', 'name nameAr slug')
+      .select('name nameAr slug description descriptionAr image parent isActive')
       .sort({ name: 1 })
       .lean();
   }
@@ -57,7 +57,7 @@ export class CategoryService {
     const filter: any = includeInactive ? {} : { isActive: true };
 
     const allCategories = await Category.find(filter)
-      .select('name slug description image parent isActive')
+      .select('name nameAr slug description descriptionAr image parent isActive')
       .sort({ name: 1 })
       .lean();
 
@@ -100,7 +100,7 @@ export class CategoryService {
    */
   static async getCategoryById(categoryId: string): Promise<any> {
     const category = await Category.findById(categoryId)
-      .populate('parent', 'name slug description image')
+      .populate('parent', 'name nameAr slug description descriptionAr image')
       .lean();
 
     if (!category) {
@@ -112,7 +112,7 @@ export class CategoryService {
       parent: categoryId,
       isActive: true,
     })
-      .select('name slug description image')
+      .select('name nameAr slug description descriptionAr image')
       .sort({ name: 1 })
       .lean();
 
@@ -129,7 +129,7 @@ export class CategoryService {
    */
   static async getCategoryBySlug(slug: string): Promise<any> {
     const category = await Category.findOne({ slug, isActive: true })
-      .populate('parent', 'name slug description image')
+      .populate('parent', 'name nameAr slug description descriptionAr image')
       .lean();
 
     if (!category) {
@@ -141,7 +141,7 @@ export class CategoryService {
       parent: category._id,
       isActive: true,
     })
-      .select('name slug description image')
+      .select('name nameAr slug description descriptionAr image')
       .sort({ name: 1 })
       .lean();
 
@@ -190,7 +190,7 @@ export class CategoryService {
       parent: currentCategory._id,
       isActive: true,
     })
-      .select('name slug description image')
+      .select('name nameAr slug description descriptionAr image')
       .sort({ name: 1 })
       .lean();
 
@@ -243,7 +243,7 @@ export class CategoryService {
 
     while (currentId) {
       const category: any = await Category.findById(currentId)
-        .select('name slug parent')
+        .select('name nameAr slug parent')
         .lean();
 
       if (!category) break;
@@ -251,6 +251,7 @@ export class CategoryService {
       breadcrumb.unshift({
         _id: category._id,
         name: category.name,
+        nameAr: category.nameAr,
         slug: category.slug,
       });
 
@@ -445,7 +446,7 @@ export class CategoryService {
 
     // Get all active categories
     const allCategories = await Category.find({ isActive: true })
-      .select('_id name slug description image parent')
+      .select('_id name nameAr slug description descriptionAr image parent')
       .lean();
 
     // Build a set of category IDs that have children (are parents)
@@ -484,8 +485,10 @@ export class CategoryService {
             category: {
               _id: category._id,
               name: category.name,
+              nameAr: (category as any).nameAr,
               slug: category.slug,
               description: category.description,
+              descriptionAr: (category as any).descriptionAr,
               image: category.image,
             },
             products,

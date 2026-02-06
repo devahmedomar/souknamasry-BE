@@ -18,6 +18,7 @@ export interface IProduct {
   name: string;
   nameAr?: string;
   description: string;
+  descriptionAr?: string;
   slug: string;
   price: number;
   compareAtPrice?: number;

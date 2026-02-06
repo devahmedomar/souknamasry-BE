@@ -30,6 +30,11 @@ export const productSchema = new Schema<IProduct, ProductModel, IProductVirtuals
       trim: true,
       maxlength: [2000, 'Description cannot exceed 2000 characters'],
     },
+    descriptionAr: {
+      type: String,
+      trim: true,
+      maxlength: [2000, 'Arabic description cannot exceed 2000 characters'],
+    },
     slug: {
       type: String,
       unique: true,
@@ -212,13 +217,15 @@ productSchema.index(
   {
     name: 'text',
     nameAr: 'text',
-    description: 'text'
+    description: 'text',
+    descriptionAr: 'text'
   },
   {
     weights: {
       name: 10,        // Highest priority for English name
       nameAr: 10,      // Equal priority for Arabic name
-      description: 3   // Lower priority for descriptions
+      description: 3,  // Lower priority for descriptions
+      descriptionAr: 3 // Equal priority for Arabic description
     },
     name: 'product_text_search',
     default_language: 'english'
