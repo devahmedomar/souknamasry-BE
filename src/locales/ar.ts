@@ -55,14 +55,18 @@ export const ar: TranslationKeys = {
 
   validation: {
     emailRequired: 'البريد الإلكتروني مطلوب',
-    emailInvalid: 'صيغة البريد الإلكتروني غير صحيحة',
+    emailInvalid: 'يرجى إدخال بريد إلكتروني صحيح',
     passwordRequired: 'كلمة المرور مطلوبة',
-    passwordTooShort: 'يجب أن تكون كلمة المرور 8 أحرف على الأقل',
+    passwordTooShort: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
     passwordTooWeak:
       'يجب أن تحتوي كلمة المرور على أحرف كبيرة وصغيرة وأرقام ورموز خاصة',
     firstNameRequired: 'الاسم الأول مطلوب',
     lastNameRequired: 'اسم العائلة مطلوب',
+    phoneRequired: 'رقم الهاتف مطلوب',
     phoneInvalid: 'رقم الهاتف غير صحيح',
+    phoneInvalidEgyptian: 'يرجى إدخال رقم هاتف مصري صحيح (مثال: 01012345678)',
+    firstNameLength: 'يجب أن يكون الاسم الأول بين 2 و 50 حرفاً',
+    lastNameLength: 'يجب أن يكون اسم العائلة بين 2 و 50 حرفاً',
     requiredField: 'هذا الحقل مطلوب',
   },
 

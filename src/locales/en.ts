@@ -55,14 +55,18 @@ export const en: TranslationKeys = {
 
   validation: {
     emailRequired: 'Email is required',
-    emailInvalid: 'Invalid email format',
+    emailInvalid: 'Please provide a valid email address',
     passwordRequired: 'Password is required',
-    passwordTooShort: 'Password must be at least 8 characters',
+    passwordTooShort: 'Password must be at least 6 characters',
     passwordTooWeak:
       'Password must contain uppercase, lowercase, number, and special character',
     firstNameRequired: 'First name is required',
     lastNameRequired: 'Last name is required',
+    phoneRequired: 'Phone number is required',
     phoneInvalid: 'Invalid phone number',
+    phoneInvalidEgyptian: 'Please provide a valid Egyptian phone number (e.g., 01012345678)',
+    firstNameLength: 'First name must be between 2 and 50 characters',
+    lastNameLength: 'Last name must be between 2 and 50 characters',
     requiredField: 'This field is required',
   },
 

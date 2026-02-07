@@ -23,10 +23,11 @@ export const handleValidationErrors = (
   }
 
   // Transform express-validator errors into field-level error object
+  // Translate messages using i18n if translation keys are provided
   const formattedErrors = errors.array().reduce(
     (acc: Record<string, string[]>, error: any) => {
       const field = error.path || error.param || 'unknown';
-      const message = error.msg;
+      const message = req.t ? req.t(error.msg) : error.msg;
 
       // Group errors by field
       if (!acc[field]) {

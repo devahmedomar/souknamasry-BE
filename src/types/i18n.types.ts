@@ -75,7 +75,11 @@ export interface TranslationKeys {
     passwordTooWeak: string;
     firstNameRequired: string;
     lastNameRequired: string;
+    phoneRequired: string;
     phoneInvalid: string;
+    phoneInvalidEgyptian: string;
+    firstNameLength: string;
+    lastNameLength: string;
     requiredField: string;
   };
 

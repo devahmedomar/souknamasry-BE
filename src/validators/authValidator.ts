@@ -22,39 +22,39 @@ export const validateRegister = [
   body('phone')
     .trim()
     .notEmpty()
-    .withMessage('Phone number is required')
+    .withMessage('validation.phoneRequired')
     .matches(EGYPTIAN_PHONE_REGEX)
-    .withMessage('Please provide a valid Egyptian phone number (e.g., 01012345678)'),
+    .withMessage('validation.phoneInvalidEgyptian'),
 
   // Password validation (simple - just minimum length)
   body('password')
     .notEmpty()
-    .withMessage('Password is required')
+    .withMessage('validation.passwordRequired')
     .isLength({ min: PASSWORD_MIN_LENGTH })
-    .withMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters`),
+    .withMessage('validation.passwordTooShort'),
 
   // First name validation (allows Arabic and English)
   body('firstName')
     .trim()
     .notEmpty()
-    .withMessage('First name is required')
+    .withMessage('validation.firstNameRequired')
     .isLength({ min: 2, max: 50 })
-    .withMessage('First name must be between 2 and 50 characters'),
+    .withMessage('validation.firstNameLength'),
 
   // Last name validation (allows Arabic and English)
   body('lastName')
     .trim()
     .notEmpty()
-    .withMessage('Last name is required')
+    .withMessage('validation.lastNameRequired')
     .isLength({ min: 2, max: 50 })
-    .withMessage('Last name must be between 2 and 50 characters'),
+    .withMessage('validation.lastNameLength'),
 
   // Email validation (optional - can be added later)
   body('email')
     .optional()
     .trim()
     .isEmail()
-    .withMessage('Please provide a valid email address')
+    .withMessage('validation.emailInvalid')
     .normalizeEmail()
     .toLowerCase(),
 ];
@@ -69,12 +69,12 @@ export const validateLogin = [
   body('phone')
     .trim()
     .notEmpty()
-    .withMessage('Phone number is required')
+    .withMessage('validation.phoneRequired')
     .matches(EGYPTIAN_PHONE_REGEX)
-    .withMessage('Please provide a valid Egyptian phone number'),
+    .withMessage('validation.phoneInvalidEgyptian'),
 
   // Password validation (basic, no strength check for login)
   body('password')
     .notEmpty()
-    .withMessage('Password is required'),
+    .withMessage('validation.passwordRequired'),
 ];
