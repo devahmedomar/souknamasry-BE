@@ -11,6 +11,9 @@ const connectDB = async (): Promise<void> => {
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
 
+    // Sync indexes to apply schema changes (e.g. sparse options)
+    await conn.connection.syncIndexes();
+
     // Handle connection events
     mongoose.connection.on('error', (err) => {
       console.error(`MongoDB connection error: ${err}`);
