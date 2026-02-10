@@ -74,6 +74,16 @@ export const validateSearchQuery = [
     .optional()
     .isIn(['top', 'bottom', 'shoes'])
     .withMessage('Invalid mannequin slot'),
+
+  query('attrs')
+    .optional()
+    .custom((value) => {
+      if (value === undefined || value === null) return true;
+      if (typeof value !== 'object' || Array.isArray(value)) return false;
+      // Validate that all keys are safe (alphanumeric + underscore only)
+      return Object.keys(value).every((k: string) => /^[a-zA-Z0-9_]+$/.test(k));
+    })
+    .withMessage('Invalid attribute filters: keys must be alphanumeric with underscores only'),
 ];
 
 /**

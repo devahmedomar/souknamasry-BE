@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { AdminController } from '../controllers/adminController.js';
 import { CategoryController } from '../controllers/categoryController.js';
+import { CategoryAttributeController } from '../controllers/categoryAttributeController.js';
 import { verifyToken, requireAdmin } from '../middleware/auth.js';
 import { handleValidationErrors } from '../middleware/validation.js';
 import {
@@ -10,6 +11,10 @@ import {
   validateUpdateUserRole,
   validateGetAllUsersQuery,
 } from '../validators/userValidator.js';
+import {
+  validateCategoryAttributeId,
+  validateUpsertCategoryAttributes,
+} from '../validators/categoryAttributeValidator.js';
 
 /**
  * Admin Routes
@@ -1075,5 +1080,40 @@ router.patch('/orders/:id/payment-status', AdminController.updatePaymentStatus);
  *         $ref: '#/components/responses/NotFoundError'
  */
 router.delete('/orders/:id', AdminController.deleteOrder);
+
+// ============== CATEGORY ATTRIBUTE MANAGEMENT ==============
+
+/**
+ * GET /api/admin/category-attributes/:categoryId
+ * Get raw attribute definitions for a category (no inheritance).
+ */
+router.get(
+  '/category-attributes/:categoryId',
+  validateCategoryAttributeId,
+  handleValidationErrors,
+  CategoryAttributeController.getCategoryAttributesDefs
+);
+
+/**
+ * PUT /api/admin/category-attributes/:categoryId
+ * Create or fully replace attribute definitions for a category.
+ */
+router.put(
+  '/category-attributes/:categoryId',
+  validateUpsertCategoryAttributes,
+  handleValidationErrors,
+  CategoryAttributeController.upsertCategoryAttributes
+);
+
+/**
+ * DELETE /api/admin/category-attributes/:categoryId
+ * Remove all attribute definitions for a category.
+ */
+router.delete(
+  '/category-attributes/:categoryId',
+  validateCategoryAttributeId,
+  handleValidationErrors,
+  CategoryAttributeController.deleteCategoryAttributes
+);
 
 export default router;

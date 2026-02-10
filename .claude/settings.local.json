@@ -15,7 +15,8 @@
       "Bash(curl:*)",
       "Bash(npm install:*)",
       "Bash(findstr:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []

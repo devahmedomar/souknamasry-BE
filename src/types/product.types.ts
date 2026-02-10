@@ -36,6 +36,7 @@ export interface IProduct {
   createdAt: Date;
   updatedAt: Date;
   mannequinSlot?: 'top' | 'bottom' | 'shoes' | null;
+  attributes?: Map<string, any> | Record<string, any>;
 }
 
 /**

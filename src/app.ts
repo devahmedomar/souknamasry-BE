@@ -13,6 +13,7 @@ import { orderRoutes } from './routes/orderRoutes.js';
 import { favouriteRoutes } from './routes/favouriteRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import categoryAttributeRoutes from './routes/categoryAttributeRoutes.js';
 
 import { ResponseUtil } from './utils/response.util.js';
 import { AppError } from './utils/errors/AppError.js';
@@ -101,6 +102,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/favourites', favouriteRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/category-attributes', categoryAttributeRoutes);
 
 
 // Global error handler middleware

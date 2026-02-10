@@ -18,6 +18,7 @@ export interface ProductQueryParams {
   sort?: 'newest' | 'price-low' | 'price-high' | 'featured' | 'relevance'; // ADDED: relevance
   inStock?: boolean;
   mannequinSlot?: 'top' | 'bottom' | 'shoes';
+  attrs?: Record<string, any>; // Dynamic attribute filters
 }
 
 /**
@@ -72,6 +73,36 @@ export interface ProductListResponse {
 }
 
 /**
+ * Apply dynamic attribute filters to a MongoDB filter query.
+ * Supports select/multi-select (comma-separated → $in) and number-range (min/max).
+ * Only processes keys that are safe (alphanumeric + underscore).
+ */
+function applyAttributeFilters(filter: any, attrs: Record<string, any>): void {
+  for (const [key, value] of Object.entries(attrs)) {
+    // Safety check: only allow safe keys
+    if (!/^[a-zA-Z0-9_]+$/.test(key)) continue;
+
+    if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+      // number-range: attrs[ram_gb][min]=4&attrs[ram_gb][max]=16
+      const rangeFilter: any = {};
+      if (value.min !== undefined) rangeFilter.$gte = Number(value.min);
+      if (value.max !== undefined) rangeFilter.$lte = Number(value.max);
+      if (Object.keys(rangeFilter).length > 0) {
+        filter[`attributes.${key}`] = rangeFilter;
+      }
+    } else if (typeof value === 'string' && value.trim()) {
+      // select / multi-select: comma-separated values → $in
+      const values = value.split(',').map((v: string) => v.trim()).filter(Boolean);
+      if (values.length === 1) {
+        filter[`attributes.${key}`] = values[0];
+      } else if (values.length > 1) {
+        filter[`attributes.${key}`] = { $in: values };
+      }
+    }
+  }
+}
+
+/**
  * Product Service
  * Handles business logic for product operations
  */
@@ -96,6 +127,7 @@ export class ProductService {
       sort = 'newest',
       inStock,
       mannequinSlot,
+      attrs,
     } = queryParams;
 
     // Validate and sanitize pagination parameters
@@ -153,6 +185,11 @@ export class ProductService {
     // Filter by mannequinSlot
     if (mannequinSlot) {
       filter.mannequinSlot = mannequinSlot;
+    }
+
+    // Filter by dynamic product attributes (e.g., color, size, ram_gb)
+    if (attrs && typeof attrs === 'object') {
+      applyAttributeFilters(filter, attrs);
     }
 
     // Search implementation
@@ -474,6 +511,7 @@ export class ProductService {
       limit = 20,
       sort = 'newest',
       inStock,
+      attrs,
     } = queryParams;
 
     // Validate and sanitize pagination parameters
@@ -501,6 +539,11 @@ export class ProductService {
     // Filter by stock status
     if (inStock !== undefined) {
       filter.inStock = inStock;
+    }
+
+    // Filter by dynamic product attributes
+    if (attrs && typeof attrs === 'object') {
+      applyAttributeFilters(filter, attrs);
     }
 
     // Search in name and description
@@ -576,6 +619,7 @@ export class ProductService {
       category?: string;
       search?: string;
       mannequinSlot?: string;
+      attrs?: Record<string, any>;
     }
   ): Promise<ProductListResponse> {
     const validatedPage = Math.max(1, Number(page));
@@ -607,6 +651,10 @@ export class ProductService {
         { description: { $regex: filters.search.trim(), $options: 'i' } },
         { descriptionAr: { $regex: filters.search.trim(), $options: 'i' } },
       ];
+    }
+
+    if (filters?.attrs && typeof filters.attrs === 'object') {
+      applyAttributeFilters(filter, filters.attrs);
     }
 
     const [products, total] = await Promise.all([

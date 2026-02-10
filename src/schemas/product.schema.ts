@@ -142,6 +142,11 @@ export const productSchema = new Schema<IProduct, ProductModel, IProductVirtuals
       enum: ['top', 'bottom', 'shoes'],
       default: null,
     },
+    attributes: {
+      type: Map,
+      of: Schema.Types.Mixed,
+      default: {},
+    },
   },
   {
     timestamps: true, // Automatically manage createdAt and updatedAt
@@ -231,3 +236,6 @@ productSchema.index(
     default_language: 'english'
   }
 );
+
+// Wildcard index to allow efficient filtering on any dynamic attribute key
+productSchema.index({ 'attributes.$**': 1 });

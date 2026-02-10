@@ -58,6 +58,9 @@ export class ProductController {
       if (req.query.mannequinSlot) {
         queryParams.mannequinSlot = req.query.mannequinSlot as any;
       }
+      if (req.query.attrs && typeof req.query.attrs === 'object' && !Array.isArray(req.query.attrs)) {
+        queryParams.attrs = req.query.attrs as Record<string, any>;
+      }
 
       // Get products from service
       const result = await ProductService.getAllProducts(queryParams);
@@ -343,6 +346,9 @@ export class ProductController {
       if (req.query.sort) queryParams.sort = req.query.sort as any;
       if (req.query.inStock !== undefined) {
         queryParams.inStock = req.query.inStock === 'true';
+      }
+      if (req.query.attrs && typeof req.query.attrs === 'object' && !Array.isArray(req.query.attrs)) {
+        queryParams.attrs = req.query.attrs as Record<string, any>;
       }
 
       // Check if should include subcategories (default: true for leaf categories)
