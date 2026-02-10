@@ -58,8 +58,33 @@ export class ProductController {
       if (req.query.mannequinSlot) {
         queryParams.mannequinSlot = req.query.mannequinSlot as any;
       }
+
+      // Parse dynamic attribute filters.
+      // Handles two formats depending on query string parser:
+      //   qs-parsed (extended):  req.query.attrs = { brand: 'samsung' }
+      //   literal bracket (simple): req.query['attrs[brand]'] = 'samsung'
+      const attrs: Record<string, any> = {};
+      // Format 1: qs already parsed nested object
       if (req.query.attrs && typeof req.query.attrs === 'object' && !Array.isArray(req.query.attrs)) {
-        queryParams.attrs = req.query.attrs as Record<string, any>;
+        Object.assign(attrs, req.query.attrs);
+      }
+      // Format 2: literal bracket keys not parsed by simple query parser
+      for (const [qKey, qVal] of Object.entries(req.query)) {
+        const simple = qKey.match(/^attrs\[([a-zA-Z0-9_]+)\]$/);
+        const nested = qKey.match(/^attrs\[([a-zA-Z0-9_]+)\]\[([a-zA-Z0-9_]+)\]$/);
+        if (simple && simple[1]) {
+          attrs[simple[1]] = qVal;
+        } else if (nested && nested[1] && nested[2]) {
+          const attrKey = nested[1];
+          const subKey = nested[2];
+          if (typeof attrs[attrKey] !== 'object' || Array.isArray(attrs[attrKey])) {
+            attrs[attrKey] = {};
+          }
+          (attrs[attrKey] as Record<string, any>)[subKey] = qVal;
+        }
+      }
+      if (Object.keys(attrs).length > 0) {
+        queryParams.attrs = attrs;
       }
 
       // Get products from service
@@ -347,8 +372,28 @@ export class ProductController {
       if (req.query.inStock !== undefined) {
         queryParams.inStock = req.query.inStock === 'true';
       }
+
+      // Parse dynamic attribute filters (same dual-format logic as getAllProducts)
+      const attrsPath: Record<string, any> = {};
       if (req.query.attrs && typeof req.query.attrs === 'object' && !Array.isArray(req.query.attrs)) {
-        queryParams.attrs = req.query.attrs as Record<string, any>;
+        Object.assign(attrsPath, req.query.attrs);
+      }
+      for (const [qKey, qVal] of Object.entries(req.query)) {
+        const simple = qKey.match(/^attrs\[([a-zA-Z0-9_]+)\]$/);
+        const nested = qKey.match(/^attrs\[([a-zA-Z0-9_]+)\]\[([a-zA-Z0-9_]+)\]$/);
+        if (simple && simple[1]) {
+          attrsPath[simple[1]] = qVal;
+        } else if (nested && nested[1] && nested[2]) {
+          const attrKey = nested[1];
+          const subKey = nested[2];
+          if (typeof attrsPath[attrKey] !== 'object' || Array.isArray(attrsPath[attrKey])) {
+            attrsPath[attrKey] = {};
+          }
+          (attrsPath[attrKey] as Record<string, any>)[subKey] = qVal;
+        }
+      }
+      if (Object.keys(attrsPath).length > 0) {
+        queryParams.attrs = attrsPath;
       }
 
       // Check if should include subcategories (default: true for leaf categories)

@@ -91,11 +91,11 @@ function applyAttributeFilters(filter: any, attrs: Record<string, any>): void {
         filter[`attributes.${key}`] = rangeFilter;
       }
     } else if (typeof value === 'string' && value.trim()) {
-      // select / multi-select: comma-separated values → $in
+      // select / multi-select: always use $in so it matches both:
+      //   - scalar stored values:  attributes.brand = "apple"
+      //   - array stored values:   attributes.brand = ["apple", "samsung"]
       const values = value.split(',').map((v: string) => v.trim()).filter(Boolean);
-      if (values.length === 1) {
-        filter[`attributes.${key}`] = values[0];
-      } else if (values.length > 1) {
+      if (values.length > 0) {
         filter[`attributes.${key}`] = { $in: values };
       }
     }
