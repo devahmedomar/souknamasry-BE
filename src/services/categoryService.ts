@@ -438,7 +438,7 @@ export class CategoryService {
    * @returns Array of sections with category metadata and products
    */
   static async getHomepageData(
-    sortBy: 'newest' | 'popular' = 'newest',
+    sortBy: 'newest' | 'popular' | 'random' = 'newest',
     limit: number = 10
   ): Promise<any[]> {
     // Validate and sanitize limit
@@ -462,22 +462,39 @@ export class CategoryService {
       (category) => !parentCategoryIds.has(category._id.toString())
     );
 
-    // Prepare sort query based on sortBy parameter
+    // Prepare sort query for non-random modes
     const sortQuery = sortBy === 'popular' ? { views: -1 as const } : { createdAt: -1 as const };
 
     // For each leaf category, fetch products
     const sections = await Promise.all(
       leafCategories.map(async (category) => {
-        // Fetch products for this category
-        const products = await Product.find({
-          category: category._id,
-          isActive: true,
-          inStock: true, // Only show in-stock products on homepage
-        })
-          .select('-supplierInfo -supplierPrice') // Exclude supplier information
-          .sort(sortQuery)
-          .limit(validatedLimit)
-          .lean();
+        let products: any[];
+
+        if (sortBy === 'random') {
+          // Use MongoDB $sample for true per-request randomization
+          products = await Product.aggregate([
+            {
+              $match: {
+                category: category._id,
+                isActive: true,
+                inStock: true,
+              },
+            },
+            { $sample: { size: validatedLimit } },
+            { $project: { supplierInfo: 0, supplierPrice: 0 } },
+          ]);
+        } else {
+          // Fetch products for this category (newest or popular)
+          products = await Product.find({
+            category: category._id,
+            isActive: true,
+            inStock: true,
+          })
+            .select('-supplierInfo -supplierPrice')
+            .sort(sortQuery)
+            .limit(validatedLimit)
+            .lean();
+        }
 
         // Only include this category if it has products
         if (products.length > 0) {

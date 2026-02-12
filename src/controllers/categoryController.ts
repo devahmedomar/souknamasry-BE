@@ -514,7 +514,10 @@ export class CategoryController {
       const { sortBy, limit } = req.query;
 
       // Validate sortBy parameter
-      const validSortBy = sortBy === 'popular' ? 'popular' : 'newest';
+      const validSortBy =
+        sortBy === 'popular' ? 'popular' :
+        sortBy === 'random'  ? 'random'  :
+        'newest';
 
       // Parse and validate limit parameter
       const parsedLimit = limit ? parseInt(limit as string, 10) : 10;
