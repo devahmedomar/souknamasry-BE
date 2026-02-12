@@ -1,16 +1,6 @@
 import { Document, Model, Types } from 'mongoose';
 
 /**
- * Supplier Information Interface
- * Contains supplier details (hidden from customers)
- */
-export interface ISupplierInfo {
-  name?: string;
-  contact?: string;
-  notes?: string;
-}
-
-/**
  * Interface representing a Product document in MongoDB
  * Contains all product-related data fields including supplier information
  */
@@ -27,8 +17,8 @@ export interface IProduct {
   inStock: boolean;
   stockQuantity: number;
   sku?: string;
-  supplierInfo?: ISupplierInfo;
-  supplierPrice?: number;
+  supplierInfo?: string;   // admin-only: where/who the product is sourced from
+  supplierPrice?: number;  // admin-only: cost price paid to supplier
   isActive: boolean;
   isFeatured: boolean;
   isSponsored: boolean;

@@ -99,18 +99,9 @@ export const productSchema = new Schema<IProduct, ProductModel, IProductVirtuals
       uppercase: true,
     },
     supplierInfo: {
-      name: {
-        type: String,
-        trim: true,
-      },
-      contact: {
-        type: String,
-        trim: true,
-      },
-      notes: {
-        type: String,
-        trim: true,
-      },
+      type: String,
+      trim: true,
+      select: false, // Hide from default queries (admin-only)
     },
     supplierPrice: {
       type: Number,
