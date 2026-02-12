@@ -52,7 +52,6 @@ export const productSchema = new Schema<IProduct, ProductModel, IProductVirtuals
       min: [0, 'Compare at price cannot be negative'],
       validate: {
         validator: function (this: IProduct, value: number): boolean {
-          // compareAtPrice should be greater than or equal to price
           return !value || value >= this.price;
         },
         message: 'Compare at price must be greater than or equal to the selling price',

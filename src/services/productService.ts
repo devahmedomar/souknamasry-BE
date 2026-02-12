@@ -703,18 +703,17 @@ export class ProductService {
     productId: string,
     updateData: Partial<IProduct>
   ): Promise<any> {
-    const product = await Product.findByIdAndUpdate(productId, updateData, {
-      new: true,
-      runValidators: true,
-    })
-      .populate('category', 'name nameAr slug')
-      .lean();
+    const product = await Product.findById(productId);
 
     if (!product) {
       throw new Error('product.productNotFound');
     }
 
-    return product;
+    // Apply all update fields onto the document so validators run with full context
+    Object.assign(product, updateData);
+    await product.save();
+
+    return product.populate('category', 'name nameAr slug');
   }
 
   /**
