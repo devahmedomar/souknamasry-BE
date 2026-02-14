@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AdminController } from '../controllers/adminController.js';
 import { CategoryController } from '../controllers/categoryController.js';
 import { CategoryAttributeController } from '../controllers/categoryAttributeController.js';
+import { SiteSettingsController } from '../controllers/siteSettingsController.js';
 import { verifyToken, requireAdmin } from '../middleware/auth.js';
 import { handleValidationErrors } from '../middleware/validation.js';
 import {
@@ -15,6 +16,12 @@ import {
   validateCategoryAttributeId,
   validateUpsertCategoryAttributes,
 } from '../validators/categoryAttributeValidator.js';
+import {
+  validateSetActiveTheme,
+  validateAddTheme,
+  validateUpdateTheme,
+  validateThemeKey,
+} from '../validators/siteSettingsValidator.js';
 
 /**
  * Admin Routes
@@ -1114,6 +1121,198 @@ router.delete(
   validateCategoryAttributeId,
   handleValidationErrors,
   CategoryAttributeController.deleteCategoryAttributes
+);
+
+// ============== SITE SETTINGS / THEME MANAGEMENT ==============
+
+/**
+ * @swagger
+ * /api/admin/settings:
+ *   get:
+ *     tags:
+ *       - Admin - Settings
+ *     summary: Get all site settings (Admin only)
+ *     description: Returns the full settings document including the active theme and all available themes.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Settings retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.get('/settings', SiteSettingsController.getSettings);
+
+/**
+ * @swagger
+ * /api/admin/settings/theme:
+ *   patch:
+ *     tags:
+ *       - Admin - Settings
+ *     summary: Set the active theme (Admin only)
+ *     description: Changes the currently active theme. The theme must exist and be enabled.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - activeTheme
+ *             properties:
+ *               activeTheme:
+ *                 type: string
+ *                 example: ramadan
+ *     responses:
+ *       200:
+ *         description: Active theme updated successfully
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.patch(
+  '/settings/theme',
+  validateSetActiveTheme,
+  handleValidationErrors,
+  SiteSettingsController.setActiveTheme
+);
+
+/**
+ * @swagger
+ * /api/admin/settings/themes:
+ *   post:
+ *     tags:
+ *       - Admin - Settings
+ *     summary: Add a new theme (Admin only)
+ *     description: Creates a new custom theme. The key must be unique.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - key
+ *               - nameAr
+ *               - nameEn
+ *             properties:
+ *               key:
+ *                 type: string
+ *                 example: national_day
+ *               nameAr:
+ *                 type: string
+ *                 example: اليوم الوطني
+ *               nameEn:
+ *                 type: string
+ *                 example: National Day
+ *               isEnabled:
+ *                 type: boolean
+ *                 default: true
+ *     responses:
+ *       201:
+ *         description: Theme added successfully
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.post(
+  '/settings/themes',
+  validateAddTheme,
+  handleValidationErrors,
+  SiteSettingsController.addTheme
+);
+
+/**
+ * @swagger
+ * /api/admin/settings/themes/{key}:
+ *   put:
+ *     tags:
+ *       - Admin - Settings
+ *     summary: Update a theme (Admin only)
+ *     description: Updates the display names or enabled status of an existing theme.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Theme key slug
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nameAr:
+ *                 type: string
+ *               nameEn:
+ *                 type: string
+ *               isEnabled:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Theme updated successfully
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.put(
+  '/settings/themes/:key',
+  validateUpdateTheme,
+  handleValidationErrors,
+  SiteSettingsController.updateTheme
+);
+
+/**
+ * @swagger
+ * /api/admin/settings/themes/{key}:
+ *   delete:
+ *     tags:
+ *       - Admin - Settings
+ *     summary: Delete a custom theme (Admin only)
+ *     description: Removes a custom theme. Built-in themes and the active theme cannot be deleted.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Theme key slug
+ *     responses:
+ *       200:
+ *         description: Theme deleted successfully
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.delete(
+  '/settings/themes/:key',
+  validateThemeKey,
+  handleValidationErrors,
+  SiteSettingsController.deleteTheme
 );
 
 export default router;
