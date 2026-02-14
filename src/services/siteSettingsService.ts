@@ -68,7 +68,7 @@ export class SiteSettingsService {
 
     const updated = await SiteSettings.findOneAndUpdate(
       {},
-      { $push: { themes: theme }, updatedBy: adminId },
+      { $push: { themes: theme }, $set: { updatedBy: adminId } },
       { new: true, lean: true }
     );
     return updated;
@@ -135,7 +135,7 @@ export class SiteSettingsService {
 
     const updated = await SiteSettings.findOneAndUpdate(
       {},
-      { $pull: { themes: { key: themeKey } }, updatedBy: adminId },
+      { $pull: { themes: { key: themeKey } }, $set: { updatedBy: adminId } },
       { new: true, lean: true }
     );
     return updated;
