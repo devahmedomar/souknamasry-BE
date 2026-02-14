@@ -1,6 +1,8 @@
 import { SiteSettings } from '../models/SiteSettings.js';
 import { DEFAULT_THEMES } from '../schemas/siteSettings.schema.js';
 import type { ITheme } from '../types/siteSettings.types.js';
+import { AppError } from '../utils/errors/AppError.js';
+import { HttpStatusCode } from '../utils/errors/error.types.js';
 
 export class SiteSettingsService {
   /**
@@ -40,10 +42,10 @@ export class SiteSettingsService {
     const theme = settings.themes.find((t) => t.key === themeKey);
 
     if (!theme) {
-      throw new Error(`Theme "${themeKey}" not found`);
+      throw new AppError(`Theme "${themeKey}" not found`, HttpStatusCode.NOT_FOUND);
     }
     if (!theme.isEnabled) {
-      throw new Error(`Theme "${themeKey}" is disabled`);
+      throw new AppError(`Theme "${themeKey}" is disabled`, HttpStatusCode.BAD_REQUEST);
     }
 
     const updated = await SiteSettings.findOneAndUpdate(
@@ -63,7 +65,7 @@ export class SiteSettingsService {
     const exists = settings.themes.some((t) => t.key === theme.key);
 
     if (exists) {
-      throw new Error(`Theme key "${theme.key}" already exists`);
+      throw new AppError(`Theme key "${theme.key}" already exists`, HttpStatusCode.CONFLICT);
     }
 
     const updated = await SiteSettings.findOneAndUpdate(
@@ -87,7 +89,7 @@ export class SiteSettingsService {
     const themeIndex = settings.themes.findIndex((t) => t.key === themeKey);
 
     if (themeIndex === -1) {
-      throw new Error(`Theme "${themeKey}" not found`);
+      throw new AppError(`Theme "${themeKey}" not found`, HttpStatusCode.NOT_FOUND);
     }
 
     // Cannot disable the currently active theme
@@ -95,7 +97,7 @@ export class SiteSettingsService {
       updates.isEnabled === false &&
       settings.activeTheme === themeKey
     ) {
-      throw new Error(`Cannot disable the currently active theme`);
+      throw new AppError(`Cannot disable the currently active theme`, HttpStatusCode.BAD_REQUEST);
     }
 
     const setFields: Record<string, unknown> = { updatedBy: adminId };
@@ -119,18 +121,18 @@ export class SiteSettingsService {
     const builtInKeys = DEFAULT_THEMES.map((t) => t.key);
 
     if (builtInKeys.includes(themeKey)) {
-      throw new Error(`Cannot delete built-in theme "${themeKey}"`);
+      throw new AppError(`Cannot delete built-in theme "${themeKey}"`, HttpStatusCode.BAD_REQUEST);
     }
 
     const settings = await SiteSettingsService.getSettings();
 
     if (settings.activeTheme === themeKey) {
-      throw new Error(`Cannot delete the currently active theme`);
+      throw new AppError(`Cannot delete the currently active theme`, HttpStatusCode.BAD_REQUEST);
     }
 
     const exists = settings.themes.some((t) => t.key === themeKey);
     if (!exists) {
-      throw new Error(`Theme "${themeKey}" not found`);
+      throw new AppError(`Theme "${themeKey}" not found`, HttpStatusCode.NOT_FOUND);
     }
 
     const updated = await SiteSettings.findOneAndUpdate(
