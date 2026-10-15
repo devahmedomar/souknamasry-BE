@@ -33,7 +33,6 @@
     "@types/express-serve-static-core": "5.0.7"
   },
   "dependencies": {
-    "@types/express-serve-static-core": "^5.0.7",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
